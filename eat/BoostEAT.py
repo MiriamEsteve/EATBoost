@@ -7,7 +7,7 @@ INF = math.inf
 class BoostEAT:
     def __init__(self, matrix, x, y, numStop):
         'Contructor for EAT tree'
-        self._checkDeep_enter_parameters(matrix, x, y, numStop)
+        self._checkBoost_enter_parameters(matrix, x, y, numStop)
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
 
@@ -41,6 +41,33 @@ class BoostEAT:
 
         # List of leaf nodes
         self.leaves = [self.t["id"]]
+
+    def _checkBoost_enter_parameters(self, matrix, x, y, numStop):
+        #var. x and var. y have been procesed
+        if type(x[0]) == int or type(y[0]) == int:
+            return
+        else:
+            self.matrix = matrix.loc[:, x + y]  # Order variables
+            self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+            self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+
+        if len(matrix) == 0:
+            raise EXIT("ERROR. The dataset must contain data")
+        elif len(x) == 0:
+            raise EXIT("ERROR. The inputs of dataset must contain data")
+        elif len(y) == 0:
+            raise EXIT("ERROR. The outputs of dataset must contain data")
+        elif numStop < 1:
+            raise EXIT("ERROR. The numStop must be 1 or higher")
+        else:
+            cols = x + y
+            for col in cols:
+                if col not in matrix.columns.tolist():
+                    raise EXIT("ERROR. The names of the inputs or outputs are not in the dataset")
+
+            for col in x:
+                if col in y:
+                    raise EXIT("ERROR. The names of the inputs and the outputs are overlapping")
 
 
 class style():
