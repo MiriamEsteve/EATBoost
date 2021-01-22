@@ -1,5 +1,6 @@
 README.md
 setup.py
+eat/BoostEAT.py
 eat/EAT.py
 eat/__init__.py
 eat/data.py
