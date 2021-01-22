@@ -1,6 +1,5 @@
 import copy
 import math
-from graphviz import Digraph
 
 INF = math.inf
 
