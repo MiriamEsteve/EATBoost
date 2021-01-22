@@ -158,7 +158,7 @@ class EAT(deepEAT):
         for i in range(len(data)):
             pred = self._predictor(self.tree, data.iloc[i, x])
             for j in range(len(self.yCol)):
-                data.loc[i, "p_" + self.yCol[j]] = pred[j]
+                data.loc[i, "p_" + str(self.yCol[j])] = pred[j]
         return data
 
     def _predictor(self, tree, register):

@@ -1,5 +1,6 @@
 import copy
 import math
+import pandas as pd
 from graphviz import Digraph
 
 INF = math.inf
@@ -293,7 +294,36 @@ class deepEAT:
         self.tree.append(tL.copy())
         self.tree.append(tR.copy())
 
-    ####################### Private methods. Pruning ##############################
+    # =============================================================================
+    # Predictor.
+    # =============================================================================
+    def predictDeep(self, data, x):
+        if type(data) == list:
+            return self._predictor(self.tree, pd.Series(data))
+
+        data = pd.DataFrame(data)
+        # Check if columns X are in data
+        #self._check_columnsX_in_data(data, x)
+        # Check length columns X
+        if len(data.loc[0, x]) != len(self.x):
+            raise EXIT("ERROR. The register must be a length of " + str(len(self.x)))
+
+        x = data.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+
+        for i in range(len(data)):
+            pred = self._predictorDeep(self.tree, data.iloc[i, x])
+            for j in range(len(self.y)):
+                data.loc[i, "p_" + str(self.y[j])] = pred[j]
+        return data
+
+    def _predictorDeep(self, tree, register):
+        ti = 0  # Root node
+        while tree[ti]["SL"] != -1:  # Until we don't reach an end node
+            if register.iloc[tree[ti]["xi"]] < tree[ti]["s"]:
+                ti = self._posIdNode(tree, tree[ti]["SL"])
+            else:
+                ti = self._posIdNode(tree, tree[ti]["SR"])
+        return tree[ti]["y"]
 
     # =============================================================================
     # Function that returns the position of the t-node in the tree
