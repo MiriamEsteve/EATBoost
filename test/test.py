@@ -1,6 +1,7 @@
 import eat
 import graphviz
 
+
 #Generate simulated data (seed, N)
 dataset = eat.Data(1, 50).data
 

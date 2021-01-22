@@ -5,6 +5,7 @@ eat/EATBoost.py
 eat/__init__.py
 eat/data.py
 eat/deep_EAT.py
+eat/deep_EAT_for_EATBoost.py
 eat/scores.py
 eat.egg-info/PKG-INFO
 eat.egg-info/SOURCES.txt
@@ -13,3 +14,5 @@ eat.egg-info/not-zip-safe
 eat.egg-info/requires.txt
 eat.egg-info/top_level.txt
 test/test.py
+test/test_boost.py
+test/test_del_test.py

@@ -32,8 +32,8 @@ class EATBoost:
         for m in range(1, self.M):  # 0 is already calculated (at init)
             # Get residuals
             for i in range(self.N):
-                for j in self.y:
-                    self.r[i][j-self.nY] = self.matrix.iloc[i, j] - self.pred[i][j-self.nY]
+                for j in range(self.nY):
+                    self.r[i][j] = self.matrix.iloc[i, self.y[j]] - self.pred[i][j]
             # Fit deep EAT
             matrix_residuals = (self.matrix.iloc[:,self.x]).join(pd.DataFrame.from_records(self.r))
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)

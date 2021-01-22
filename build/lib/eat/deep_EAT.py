@@ -4,31 +4,6 @@ from graphviz import Digraph
 
 INF = math.inf
 
-
-class style():
-    BLACK = '\033[30m'
-    RED = '\033[31m'
-    GREEN = '\033[32m'
-    YELLOW = '\033[33m'
-    BLUE = '\033[34m'
-    MAGENTA = '\033[35m'
-    CYAN = '\033[36m'
-    WHITE = '\033[37m'
-    UNDERLINE = '\033[4m'
-    RESET = '\033[0m'
-
-class EXIT(Exception):
-    def __init__(self, *args):
-        if args:
-            self.message = args[0]
-        else:
-            self.message = None
-
-    def __str__(self):
-        if self.message:
-            return style.YELLOW + "\n\n" + self.message + style.RESET
-
-
 class deepEAT:
     def __init__(self, matrix, x, y, numStop):
         'Contructor for EAT tree'
@@ -371,3 +346,27 @@ class deepEAT:
         RRight, numR = self._RBranch(self.tree[self._posIdNode(self.tree, tprim["SR"])])
 
         return (RLeft + RRight), (numL + numR)
+
+
+class style():
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+class EXIT(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return style.YELLOW + "\n\n" + self.message + style.RESET
