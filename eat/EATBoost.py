@@ -6,7 +6,7 @@ INF = math.inf
 
 class EATBoost:
     def __init__(self, matrix, x, y, numStop, J, M, v):
-        'Contructor for BoostEAT tree'
+        'Constructor for BoostEAT tree'
         self._checkBoost_enter_parameters(matrix, x, y, numStop)
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
