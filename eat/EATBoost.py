@@ -4,16 +4,18 @@ from graphviz import Digraph
 
 INF = math.inf
 
-class BoostEAT:
-    def __init__(self, matrix, x, y, numStop):
-        'Contructor for EAT tree'
+class EATBoost:
+    def __init__(self, matrix, x, y, numStop, J, M, v):
+        'Contructor for BoostEAT tree'
         self._checkBoost_enter_parameters(matrix, x, y, numStop)
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
-
         self.N = len(self.matrix)  # Num. rows in dataset
 
-        self.numStop = numStop
+        self.numStop = numStop #Stop rule
+        self.J = J #Num. final leaves
+        self.M = M #Num. steps
+        self.v = v #Learning rate
 
         # Root node
         self.t = {
