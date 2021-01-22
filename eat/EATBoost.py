@@ -1,5 +1,7 @@
 import copy
 import math
+from eat.deep_EAT_for_EATBoost import deepEATBoost
+import pandas as pd
 
 INF = math.inf
 
@@ -7,6 +9,11 @@ class EATBoost:
     def __init__(self, matrix, x, y, numStop, J, M, v):
         'Constructor for BoostEAT tree'
         self._checkBoost_enter_parameters(matrix, x, y, numStop)
+
+        self.matrix = matrix.loc[:, x + y]  # Order variables
+        self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+        self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
         self.N = len(self.matrix)  # Num. rows in dataset
@@ -16,41 +23,35 @@ class EATBoost:
         self.M = M #Num. steps
         self.v = v #Learning rate
 
-        # Root node
-        self.t = {
-            "id": 0,
-            "F": -1,  # Father
-            "SL": -1,  # Son Left
-            "SR": -1,  # Son right
-            "index": self.matrix.index.values,  # index of matrix
-            "varInfo": [[INF, INF, -1]] * self.nX,
-            # Array for each xi containing the R(tL) and R(tR) and the alternative s
-            "R": -1,  # R(t)
-            "errMin": INF,
-            "xi": -1,
-            "s": -1,
-            "y": [max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)],  # Estimation, maximum value in matrix
-            "a": [min(self.matrix.iloc[:, i]) for i in range(self.nX)],  # Minimal coordenate
-            "b": [INF] * self.nX
-        }
+        self.r = [[0]*self.nY for i in range(self.N)]   # residuals
+        self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
 
-        # Calculate R(t)
-        self.t["R"] = self.mse(self.t["index"], self.t["y"])
+    def fit_eat_boost(self):
 
-        # Tree
-        self.tree = [self.t.copy()]
+        # Step 2
+        for m in range(1, self.M):  # 0 is already calculated (at init)
+            # Get residuals
+            for i in range(self.N):
+                for j in self.y:
+                    self.r[i][j-self.nY] = self.matrix.iloc[i, j] - self.pred[i][j-self.nY]
+            # Fit deep EAT
+            matrix_residuals = (self.matrix.iloc[:,self.x]).join(pd.DataFrame.from_records(self.r))
+            deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
+            deep_eat.fit_deep_EAT()
+            # Update prediction
+            deep_eat_pred = deep_eat._predict()
+            for i in range(self.N):
+                for j in range(self.nY):
+                    self.pred[i][j] += deep_eat_pred.iloc[i,j]
 
-        # List of leaf nodes
-        self.leaves = [self.t["id"]]
+    def predict(self):
+        return self.matrix.join(pd.DataFrame.from_records(self.pred))
 
     def _checkBoost_enter_parameters(self, matrix, x, y, numStop):
+
         #var. x and var. y have been procesed
         if type(x[0]) == int or type(y[0]) == int:
             return
-        else:
-            self.matrix = matrix.loc[:, x + y]  # Order variables
-            self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
-            self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
 
         if len(matrix) == 0:
             raise EXIT("ERROR. The dataset must contain data")
