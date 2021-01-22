@@ -9,7 +9,7 @@ For more info see: https://doi.org/10.1016/j.eswa.2020.113783
 
 <b>Step1</b>. Open the Anaconda Prompt console, place it in the desired directory for installation and enter the instruction: 
 ```
-git clone https://github.com/MiriamEsteve/EATpy.git
+git clone https://github.com/MiriamEsteve/EATBoost.git
 ```
 
 <b>Step 2</b>. Place us in the folder created by EATpy, using "cd EATpy", and execute the instruction:
