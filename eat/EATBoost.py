@@ -25,6 +25,10 @@ class EATBoost:
         self.arrJ = J  # Num. final leaves
         self.arrM = M  # Num. steps
         self.arrv = v  # Learning rate
+        self.bestJ = -1
+        self.bestM = -1
+        self.bestv = -1
+        self.mse = 0
 
         self.originalMatrix = self.matrix
         #70%-30%
@@ -40,10 +44,6 @@ class EATBoost:
         self.calculate_eat_boost()
 
     def best_combination_eat_boost(self):
-        self.bestJ = -1
-        self.bestM = -1
-        self.bestv = -1
-        self.mse = 0
         mse_min = INF
 
         #Check all combinations (J, M, v)

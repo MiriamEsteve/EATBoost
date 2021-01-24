@@ -12,6 +12,10 @@ J = [4, 5]
 v = [0.1, 0.15]
 M = [2, 3]
 
+J = [100000]
+M = [1]
+v = [0]
+
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop, J, M, v)
 #Fit model
