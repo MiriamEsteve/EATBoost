@@ -19,6 +19,7 @@ class EATBoost:
         self.N = len(self.matrix)  # Num. rows in dataset
 
         self.numStop = numStop #Stop rule
+        self.realJ = [] #list real J for each M
         self.J = J #Num. final leaves
         self.M = M #Num. steps
         self.v = v #Learning rate
@@ -47,14 +48,16 @@ class EATBoost:
         mse_min = INF
 
         #Check all combinations (J, M, v)
-        for self.J in self.arrJ:
-            for self.M in self.arrM:
+        for self.M in self.arrM:
+            print("J: ", self.arrJ, ", realJ: ", self.realJ)
+            for self.J in self.arrJ:
                 for self.v in self.arrv:
                     self.mse = 0 #Ini. MSE
                     #Built EATBoost
                     self.matrix = self.training
                     self.N = len(self.matrix)
                     self.calculate_eat_boost()
+
                     #predict
                     self.matrix = self.test
                     self.N = len(self.matrix)
@@ -81,7 +84,7 @@ class EATBoost:
 
     def calculate_eat_boost(self):
         # Step 2
-        for m in range(1, self.M):  # 0 is already calculated (at init)
+        for m in range(self.M):  # 0 is already calculated (at init)
             # Get residuals
             for i in range(self.N):
                 for j in range(self.nY):
@@ -98,6 +101,8 @@ class EATBoost:
 
             #NO ESTOY SEGURA
             self.tree = deep_eat.tree
+            print(self.realJ)
+            self.realJ.append(deep_eat.numFinalLeaves)
             #print(self.tree)
 
     def predict(self):
