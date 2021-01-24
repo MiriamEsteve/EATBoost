@@ -71,6 +71,7 @@ class EATBoost:
                     print(" ----- (", self.J, ", ", self.M, ", ", self.v, ") = ", self.mse)
 
         #Save best combination
+        self.mse = mse_min
         self.J = self.bestJ
         self.M = self.bestM
         self.v = self.bestv
