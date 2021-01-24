@@ -23,11 +23,57 @@ class EATBoost:
         self.M = M #Num. steps
         self.v = v #Learning rate
 
+        self.originalMatrix = self.matrix
+        #70%-30%
+        self.training
+        self.test
+
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
 
     def fit_eat_boost(self):
+        self.best_combination_eat_boost()
+        self.calculate_eat_boost()
 
+    def best_combination_eat_boost(self):
+        J = self.J
+        M = self.M
+        v = self.v
+        self.bestJ = -1
+        self.bestM = -1
+        self.bestv = -1
+        self.mse = 0
+        mse_min = INF
+
+        #Check all combinations (J, M, v)
+        for self.J in J:
+            for self.M in M:
+                for self.v in v:
+                    #Built EATBoost
+                    self.matrix = self.training
+                    self.calculate_eat_boost()
+                    #predict
+                    self.matrix = self.test
+                    self.predict() #CAMBIAR. TIENE QUE SER CON EL TEST
+
+                    #Calculate MSE
+                    # TEST
+                    for register in range(len(self.test)):
+                        for j in range(self.nY):
+                            self.mse += (self.test.iloc[register, self.y[j]] - self.pred[j]) ** 2
+                    if self.mse < mse_min:
+                        mse_min = self.mse
+                        self.bestJ = self.J
+                        self.bestM = self.M
+                        self.bestv = self.v
+
+        #Save best combination
+        self.J = self.bestJ
+        self.M = self.bestM
+        self.v = self.bestv
+        self.matrix = self.originalMatrix
+
+    def calculate_eat_boost(self):
         # Step 2
         for m in range(1, self.M):  # 0 is already calculated (at init)
             # Get residuals
@@ -42,7 +88,7 @@ class EATBoost:
             deep_eat_pred = deep_eat._predict()
             for i in range(self.N):
                 for j in range(self.nY):
-                    self.pred[i][j] += deep_eat_pred.iloc[i,j]
+                    self.pred[i][j] += deep_eat_pred.iloc[i, j]
 
     def predict(self):
         return self.matrix.join(pd.DataFrame.from_records(self.pred))
