@@ -103,6 +103,11 @@ class EATBoost:
         return self.matrix.join(pd.DataFrame.from_records(self.pred))
 
     def _predictData(self, data):
+        if self.tree == -1:  #Not calculated
+            deep_eat = deepEATBoost(self.matrix, self.x, self.y, self.numStop, self.J)
+            deep_eat.fit_deep_EAT()
+            self.tree = deep_eat.tree
+
         for i in range(self.N):
             pred = self._predictor(self.tree, data.iloc[i, self.x])
             for j in range(self.nY):
