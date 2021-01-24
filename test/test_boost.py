@@ -10,7 +10,7 @@ y = ["y1", "y2"]
 numStop = 1
 J = [4, 5]
 v = [0.1, 0.15]
-M = [1, 2]
+M = [2, 3]
 
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop, J, M, v)

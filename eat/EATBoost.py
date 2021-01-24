@@ -22,6 +22,9 @@ class EATBoost:
         self.J = J #Num. final leaves
         self.M = M #Num. steps
         self.v = v #Learning rate
+        self.arrJ = J  # Num. final leaves
+        self.arrM = M  # Num. steps
+        self.arrv = v  # Learning rate
 
         self.originalMatrix = self.matrix
         #70%-30%
@@ -30,15 +33,13 @@ class EATBoost:
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
+        self.tree = -1
 
     def fit_eat_boost(self):
         self.best_combination_eat_boost()
         self.calculate_eat_boost()
 
     def best_combination_eat_boost(self):
-        J = self.J
-        M = self.M
-        v = self.v
         self.bestJ = -1
         self.bestM = -1
         self.bestv = -1
@@ -46,32 +47,36 @@ class EATBoost:
         mse_min = INF
 
         #Check all combinations (J, M, v)
-        for self.J in J:
-            for self.M in M:
-                for self.v in v:
+        for self.J in self.arrJ:
+            for self.M in self.arrM:
+                for self.v in self.arrv:
+                    self.mse = 0 #Ini. MSE
                     #Built EATBoost
                     self.matrix = self.training
+                    self.N = len(self.matrix)
                     self.calculate_eat_boost()
                     #predict
                     self.matrix = self.test
+                    self.N = len(self.matrix)
                     self._predictData(self.test)
-
-                    #Calculate MSE
-                    # TEST
+                    #Calculate MSE --> TEST
                     for register in range(len(self.test)):
                         for j in range(self.nY):
-                            self.mse += (self.test.iloc[register, self.y[j]] - self.pred[j]) ** 2
+                            self.mse += (self.test.iloc[register, self.y[j]] - self.pred[register][j]) ** 2
                     if self.mse < mse_min:
                         mse_min = self.mse
                         self.bestJ = self.J
                         self.bestM = self.M
                         self.bestv = self.v
+                    print(" ----- (", self.J, ", ", self.M, ", ", self.v, ") = ", self.mse)
 
         #Save best combination
         self.J = self.bestJ
         self.M = self.bestM
         self.v = self.bestv
         self.matrix = self.originalMatrix
+        self.N = len(self.matrix)
+        print("J: ", self.J, ", M: ", self.M, ", v: ", self.v, ", mse: ", self.mse)
 
     def calculate_eat_boost(self):
         # Step 2
@@ -81,7 +86,7 @@ class EATBoost:
                 for j in range(self.nY):
                     self.r[i][j] = self.matrix.iloc[i, self.y[j]] - self.pred[i][j]
             # Fit deep EAT
-            matrix_residuals = (self.matrix.iloc[:,self.x]).join(pd.DataFrame.from_records(self.r))
+            matrix_residuals = (self.matrix.iloc[:, self.x]).join(pd.DataFrame.from_records(self.r))
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
             deep_eat.fit_deep_EAT()
             # Update prediction
@@ -91,7 +96,8 @@ class EATBoost:
                     self.pred[i][j] += deep_eat_pred.iloc[i, j]
 
             #NO ESTOY SEGURA
-            self.tree = deep_eat
+            self.tree = deep_eat.tree
+            #print(self.tree)
 
     def predict(self):
         return self.matrix.join(pd.DataFrame.from_records(self.pred))
@@ -101,6 +107,12 @@ class EATBoost:
             pred = self._predictor(self.tree, data.iloc[i, self.x])
             for j in range(self.nY):
                 self.pred[i][j] = pred[j]
+
+    def _posIdNode(self, tree, idNode):
+        for i in range(len(tree)):
+            if tree[i]["id"] == idNode:
+                return i
+        return -1
 
     def _predictor(self, tree, register):
         ti = 0  # Root node
