@@ -25,8 +25,8 @@ class EATBoost:
 
         self.originalMatrix = self.matrix
         #70%-30%
-        self.training
-        self.test
+        self.training = self.matrix.sample(frac=0.7).reset_index(drop=True)
+        self.test = self.matrix.drop(list(self.training.index)).reset_index(drop=True)
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
@@ -54,7 +54,7 @@ class EATBoost:
                     self.calculate_eat_boost()
                     #predict
                     self.matrix = self.test
-                    self.predict() #CAMBIAR. TIENE QUE SER CON EL TEST
+                    self._predictData(self.test)
 
                     #Calculate MSE
                     # TEST
@@ -90,8 +90,26 @@ class EATBoost:
                 for j in range(self.nY):
                     self.pred[i][j] += deep_eat_pred.iloc[i, j]
 
+            #NO ESTOY SEGURA
+            self.tree = deep_eat
+
     def predict(self):
         return self.matrix.join(pd.DataFrame.from_records(self.pred))
+
+    def _predictData(self, data):
+        for i in range(self.N):
+            pred = self._predictor(self.tree, data.iloc[i, self.x])
+            for j in range(self.nY):
+                self.pred[i][j] = pred[j]
+
+    def _predictor(self, tree, register):
+        ti = 0  # Root node
+        while tree[ti]["SL"] != -1:  # Until we don't reach an end node
+            if register.iloc[tree[ti]["xi"]] < tree[ti]["s"]:
+                ti = self._posIdNode(tree, tree[ti]["SL"])
+            else:
+                ti = self._posIdNode(tree, tree[ti]["SR"])
+        return tree[ti]["y"]
 
     def _checkBoost_enter_parameters(self, matrix, x, y, numStop):
 
