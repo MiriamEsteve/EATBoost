@@ -17,11 +17,6 @@ J = [100000]
 M = [1]
 v = [1]
 
-data = eat.Data2(50, 1).data
-dataset = data.iloc[:,:-1].copy()
-
-x = ["x1"]
-y = ["y"]
 
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop, J, M, v)
@@ -35,8 +30,15 @@ model = eat.deepEAT(dataset, x, y, numStop)
 model.fit_deep_EAT()
 predictDeepEAT = model.predictDeep(data, x)
 
-model.grafico2D(predictDeepEAT)
 
+# MONO-OUTPUT
+data = eat.Data2(50, 1).data
+dataset = data.iloc[:,:-1].copy()
+
+x = ["x1"]
+y = ["y"]
+
+model.grafico2D(predictDeepEAT)
 
 predBoost["yD"] = data["yD"]
 modelBoost.grafico2D(predBoost)
