@@ -67,6 +67,8 @@ class Data2:
 
         if self.nX == 1:
             self.generate_3()
+        elif self.nX == 2:
+            self.generate_3()
         elif self.nX == 3:
             self.generate_3()
         elif self.nX == 6:

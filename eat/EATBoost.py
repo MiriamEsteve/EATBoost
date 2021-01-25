@@ -3,7 +3,7 @@ import math
 from eat.deep_EAT_for_EATBoost import deepEATBoost
 import pandas as pd
 import numpy as np
-# import pylab
+import pylab
 
 INF = math.inf
 
@@ -44,7 +44,7 @@ class EATBoost:
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
-        self.f0 = self.pred[0]
+        self.f0 = self.pred[0].copy()
         self.tree = -1
 
     def fit_eat_boost(self):
@@ -101,13 +101,14 @@ class EATBoost:
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
             deep_eat.fit_deep_EAT()
             self.trees.append(deep_eat.tree)
-            print(self.trees)
+            #print(self.trees)
             # Update prediction
             deep_eat_pred = deep_eat._predict()
             for i in range(self.N):
                 for j in range(self.nY):
                     self.pred[i][j] += self.v*deep_eat_pred.iloc[i, j]
 
+                #print("pred: ", self.pred)
     # Prediction of eat boot
     def predict(self, data, x):
         if type(data) == list:
@@ -124,16 +125,19 @@ class EATBoost:
 
         for i in range(len(data)):
             pred = self._predictor(data.iloc[i, x])
+            #print("x: ", x, " reg: ", data.iloc[i, x])
+            #print(pred)
             for j in range(self.nY):
                 data.loc[i, "p_" + str(self.yCol[j])] = pred[j]
         return data
 
     def _predictor(self, register):
         f = np.array(self.f0)
+        #print("f0: ", f)
         for tree in self.trees:
-            print(self._deep_eat_predictor(tree, register))
+            #print(self._deep_eat_predictor(tree, register))
             f += self.v*np.array(self._deep_eat_predictor(tree, register))
-        print(f)
+        #print("f: ", f)
         return f
 
 
@@ -197,7 +201,7 @@ class EATBoost:
 
         # --------------- Graphic mono_EAT ----------------------------
         my_label = "EAT"
-        pylab.step(datos['x1'], datos[0], 'r', color="c", label=my_label, where="post")
+        pylab.step(datos['x1'], datos["p_y"], 'r', color="c", label=my_label, where="post")
 
         # --------------- Graphic multi_EAT ----------------------------
         # my_label = "multi_EAT"

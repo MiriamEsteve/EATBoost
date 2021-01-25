@@ -2,18 +2,19 @@ import eat
 import pandas as pd
 
 #Generate simulated data (seed, N)
-'''dataset = eat.Data(1, 10).data
+dataset = eat.Data(1, 10).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
-y = ["y1", "y2"]'''
+y = ["y1", "y2"]
+'''
 
-data = eat.Data2(10, 3).data
+data = eat.Data2(10, 2).data
 dataset = data.iloc[:,:-1].copy()
 
-x = ["x1", "x2", "x3"]
+x = ["x1", "x2"]
 y = ["y"]
-
+'''
 numStop = 1
 J = [4, 5]
 v = [0.1, 0.15]
