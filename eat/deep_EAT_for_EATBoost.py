@@ -53,7 +53,7 @@ class deepEATBoost:
     def fit_deep_EAT(self):
 
         'Build tree'
-        while len(self.leaves) != 0 and self.numFinalLeaves <= self.J:  # No empty tree
+        while len(self.leaves) != 0 and self.numFinalLeaves < self.J:  # No empty tree
             idNodoSplit = self.leaves.pop()
             self.t = self.tree[idNodoSplit]
             if self._isFinalNode(self.t):

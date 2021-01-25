@@ -2,7 +2,8 @@ import copy
 import math
 from eat.deep_EAT_for_EATBoost import deepEATBoost
 import pandas as pd
-import pylab
+import numpy as np
+# import pylab
 
 INF = math.inf
 
@@ -14,6 +15,8 @@ class EATBoost:
         self.matrix = matrix.loc[:, x + y]  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+        self.xCol = x
+        self.yCol = y
 
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
@@ -32,6 +35,8 @@ class EATBoost:
         self.bestv = -1
         self.mse = 0
 
+        self.trees = []
+
         self.originalMatrix = self.matrix
         #70%-30%
         self.training = self.matrix.sample(frac=0.7).reset_index(drop=True)
@@ -39,10 +44,11 @@ class EATBoost:
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
+        self.f0 = self.pred[0]
         self.tree = -1
 
     def fit_eat_boost(self):
-        self.best_combination_eat_boost()
+        # self.best_combination_eat_boost()
         self.calculate_eat_boost()
 
     def best_combination_eat_boost(self):
@@ -94,39 +100,45 @@ class EATBoost:
             matrix_residuals = (self.matrix.iloc[:, self.x]).join(pd.DataFrame.from_records(self.r))
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
             deep_eat.fit_deep_EAT()
+            self.trees.append(deep_eat.tree)
+            print(self.trees)
             # Update prediction
             deep_eat_pred = deep_eat._predict()
             for i in range(self.N):
                 for j in range(self.nY):
-                    self.pred[i][j] += deep_eat_pred.iloc[i, j]
+                    self.pred[i][j] += self.v*deep_eat_pred.iloc[i, j]
 
-            #NO ESTOY SEGURA
-            self.tree = deep_eat.tree
-            print(self.realJ)
-            self.realJ.append(deep_eat.numFinalLeaves)
-            #print(self.tree)
+    # Prediction of eat boot
+    def predict(self, data, x):
+        if type(data) == list:
+            return self._predictor(pd.Series(data))
 
-    def predict(self):
-        return self.matrix.join(pd.DataFrame.from_records(self.pred))
+        data = pd.DataFrame(data)
+        #Check if columns X are in data
+        # self._check_columnsX_in_data(data, x)
+        #Check length columns X
+        if len(data.loc[0, x]) != self.nX:
+            raise EXIT("ERROR. The register must be a length of " + str(self.nX))
 
-    def _predictData(self, data):
-        if self.tree == -1:  #Not calculated
-            deep_eat = deepEATBoost(self.matrix, self.x, self.y, self.numStop, self.J)
-            deep_eat.fit_deep_EAT()
-            self.tree = deep_eat.tree
+        x = data.columns.get_indexer(x).tolist()  # Index var.ind in matrix
 
-        for i in range(self.N):
-            pred = self._predictor(self.tree, data.iloc[i, self.x])
+        for i in range(len(data)):
+            pred = self._predictor(data.iloc[i, x])
             for j in range(self.nY):
-                self.pred[i][j] = pred[j]
+                data.loc[i, "p_" + str(self.yCol[j])] = pred[j]
+        return data
 
-    def _posIdNode(self, tree, idNode):
-        for i in range(len(tree)):
-            if tree[i]["id"] == idNode:
-                return i
-        return -1
+    def _predictor(self, register):
+        f = np.array(self.f0)
+        for tree in self.trees:
+            print(self._deep_eat_predictor(tree, register))
+            f += self.v*np.array(self._deep_eat_predictor(tree, register))
+        print(f)
+        return f
 
-    def _predictor(self, tree, register):
+
+    # Methods to predict in deep_eat trees
+    def _deep_eat_predictor(self, tree, register):
         ti = 0  # Root node
         while tree[ti]["SL"] != -1:  # Until we don't reach an end node
             if register.iloc[tree[ti]["xi"]] < tree[ti]["s"]:
@@ -134,6 +146,13 @@ class EATBoost:
             else:
                 ti = self._posIdNode(tree, tree[ti]["SR"])
         return tree[ti]["y"]
+
+    def _posIdNode(self, tree, idNode):
+        for i in range(len(tree)):
+            if tree[i]["id"] == idNode:
+                return i
+        return -1
+
 
     def _checkBoost_enter_parameters(self, matrix, x, y, numStop):
 
