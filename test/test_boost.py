@@ -1,4 +1,5 @@
 import eat
+import pandas as pd
 
 #Generate simulated data (seed, N)
 dataset = eat.Data(1, 10).data
@@ -16,14 +17,26 @@ J = [100000]
 M = [1]
 v = [1]
 
+data = eat.Data2(50, 1).data
+dataset = data.iloc[:,:-1].copy()
+
+x = ["x1"]
+y = ["y"]
+
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop, J, M, v)
 #Fit model
 modelBoost.fit_eat_boost()
-predBoost = modelBoost.predict().iloc[:, -len(y):]
+predBoost = modelBoost.predict()
 
 #Create model
 model = eat.deepEAT(dataset, x, y, numStop)
 #Fit model
 model.fit_deep_EAT()
-predictDeepEAT = model.predictDeep(dataset, x).iloc[:, -len(y):]
+predictDeepEAT = model.predictDeep(data, x)
+
+model.grafico2D(predictDeepEAT)
+
+
+predBoost["yD"] = data["yD"]
+modelBoost.grafico2D(predBoost)

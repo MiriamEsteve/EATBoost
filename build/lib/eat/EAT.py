@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import math
 INF = math.inf
+
 from eat.deep_EAT import deepEAT
 
 class style():
@@ -170,7 +171,8 @@ class EAT(deepEAT):
                 ti = self._posIdNode(tree, tree[ti]["SR"])
         return tree[ti]["y"]
 
-    ########################## Private methods ####################################
+
+        ########################## Private methods ####################################
 
     # =============================================================================
     # treesForRCV. Generation of the trees and tree_alpha_list for each v of folds

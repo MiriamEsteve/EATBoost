@@ -2,6 +2,7 @@ import copy
 import math
 import pandas as pd
 from graphviz import Digraph
+import pylab
 
 INF = math.inf
 
@@ -120,6 +121,49 @@ class deepEAT:
             dot.edge(str(self.tree[i]["id"]), str(self.tree[i]["SR"]))
 
         return dot.source
+
+    # graphic(dataset)
+    def grafico2D(self, datos):
+        # Ordenar "X" para que el gráfico no se confunda al dibujar
+        datos = datos.sort_values(by=["x1"])
+
+        # ------------  Graphic Data ---------------------
+        my_label = 'Data'
+        pylab.plot(datos['x1'], datos['y'], 'bo', color="b", markersize=5, label=my_label)
+
+        # ------------  Graphic frontera Dios ---------------------
+        my_label = 'Th Frontier'
+        pylab.plot(datos['x1'], datos['yD'], 'r--', label=my_label)  # Experimentos Monte Carlo
+
+        # --------------- Graphic FDH ----------------------------
+        #my_label = "FDH"
+        #pylab.step(datos['x1'], datos["yFDH"], 'r', color="g", label=my_label, where="post")
+
+        # --------------- Graphic mono_EAT ----------------------------
+        my_label = "EAT"
+        pylab.step(datos['x1'], datos["p_1"], 'r', color="c", label=my_label, where="post")
+
+        # --------------- Graphic multi_EAT ----------------------------
+        # my_label = "multi_EAT"
+        # pylab.step(datos['x1'], datos["m_y0"], 'r', color="g", label=my_label, where="post")
+
+        # --------------- Graphic EAT_DEA ----------------------------
+        # my_label = "EAT_DEA"
+        # pylab.plot(datos['X'], datos["y_DEA_EAT"], 'r-', color="m", label=my_label)
+
+        # --------------- Graphic CART ----------------------------
+        # my_label = "CART"
+        # pylab.step(datos['X'], datos["yCART"], 'r', color="y", label=my_label, where="post")
+
+        # --------------- Graphic CART ----------------------------
+        # my_label = "Pruned CART"
+        # pylab.step(datos['X'], datos["yCART.pruned"], 'r', color="m", label=my_label, where="post")
+
+        # --------------- Graphic  ----------------------------
+        # pylab.title("Deep EAT")
+        pylab.xlabel("X")
+        pylab.ylabel("Y")
+        pylab.legend(loc='upper left')
 
     # =============================================================================
     # Mean Square Error (MSE)
