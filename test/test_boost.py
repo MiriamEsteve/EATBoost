@@ -15,7 +15,7 @@ dataset = data.iloc[:,:-1].copy()
 x = ["x1", "x2"]
 y = ["y"]
 '''
-numStop = 1
+numStop = 5
 J = [4, 5]
 v = [0.1, 0.15]
 M = [2, 3]

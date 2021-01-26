@@ -13,8 +13,8 @@ dataset = data.iloc[:,:-1].copy()
 y = [dataset.columns[-1]]
 x = list(dataset.drop(y, axis=1).columns)
 
-numStop = 1
-fold = 1
+numStop = 5
+fold = 5
 
 #Create model
 model = eat.EAT(dataset, x, y, numStop, fold)
