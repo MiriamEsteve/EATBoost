@@ -20,17 +20,14 @@ J = [4, 5]
 v = [0.1, 0.15]
 M = [2, 3]
 
-J = 100000
-M = 2
-v = 1
-
-
 #Create model
-modelBoost = eat.EATBoost(dataset, x, y, numStop, J, M, v)
+modelBoost = eat.EATBoost(dataset, x, y, numStop)
 #Fit model
-modelBoost.fit_eat_boost()
+resultCV = modelBoost.gridCV(J,M,v,5)
+resultTestSample = modelBoost.gridTestSample(J,M,v)
+
+modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
 predBoost = modelBoost.predict(dataset, x)
-print(predBoost)
 
 #Create model
 model = eat.deepEAT(dataset, x, y, numStop)

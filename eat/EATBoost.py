@@ -3,16 +3,17 @@ import math
 from eat.deep_EAT_for_EATBoost import deepEATBoost
 import pandas as pd
 import numpy as np
-import pylab
+# import pylab
 
 INF = math.inf
 
 class EATBoost:
-    def __init__(self, matrix, x, y, numStop, J, M, v):
+    def __init__(self, matrix, x, y, numStop):
         'Constructor for BoostEAT tree'
-        self._checkBoost_enter_parameters(matrix, x, y, numStop)
+        #self._checkBoost_enter_parameters(matrix, x, y, numStop)
 
         self.matrix = matrix.loc[:, x + y]  # Order variables
+        self.originalMatrix = matrix.loc[:, x + y]  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
         self.xCol = x
@@ -22,73 +23,121 @@ class EATBoost:
         self.nY = len(y)  # Num. var. obj
         self.N = len(self.matrix)  # Num. rows in dataset
 
-        self.numStop = numStop #Stop rule
-        self.J = J #Num. final leaves
-        self.M = M #Num. steps
-        self.v = v #Learning rate
-        self.arrJ = J  # Num. final leaves
-        self.arrM = M  # Num. steps
-        self.arrv = v  # Learning rate
-        self.bestJ = -1
-        self.bestM = -1
-        self.bestv = -1
-        self.mse = 0
+        self.numStop = numStop  #Stop rule
+        self.J = 0 #Num. final leaves
+        self.M = 0 #Num. steps
+        self.v = 0 #Learning rate
 
         self.trees = []
-
-        self.originalMatrix = self.matrix
-        #70%-30%
-        self.training = self.matrix.sample(frac=0.7).reset_index(drop=True)
-        self.test = self.matrix.drop(list(self.training.index)).reset_index(drop=True)
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
         self.f0 = self.pred[0].copy()
         self.tree = -1
 
-    def fit_eat_boost(self):
-        # self.best_combination_eat_boost()
-        self.calculate_eat_boost()
 
-    def best_combination_eat_boost(self):
-        mse_min = INF
+    def _generateFolds(self, folds):
+        numRowsFold = math.floor(self.N / folds)
+
+        test, training = [], []
+
+        for v in range(folds):
+            # Test
+            test.append(self.originalMatrix.sample(n=numRowsFold).reset_index(drop=True))
+            # Training
+            training.append(self.originalMatrix.drop(list(test[v].index)).reset_index(drop=True))
+
+        return (test, training)
+
+    def gridCV(self, arrJ, arrM, arrv, folds):
+
+        # Built EATBoost
+        originalMatrix = self.matrix
+
+        # Generate folds for CV
+        (test, training) = self._generateFolds(folds)
+
+        # Dataframe to save results
+        result = pd.DataFrame([], columns=["M", "J", "v", "MSE", "std"])
 
         #Check all combinations (J, M, v)
-        for self.M in self.arrM:
-            print("J: ", self.arrJ, ", realJ: ", self.realJ)
-            for self.J in self.arrJ:
-                for self.v in self.arrv:
-                    self.mse = 0 #Ini. MSE
-                    #Built EATBoost
-                    self.matrix = self.training
+        for m in arrM:
+            for j in arrJ:
+                for v in arrv:
+                    mseList = []
+                    for i in range(folds):
+                        mse = 0 #Ini. MSE
+
+                        self.matrix = training[i]
+                        self.N = len(self.matrix)
+                        self.fit_eat_boost(j, m , v)
+
+                        #predict
+                        self.matrix = test[i]
+                        self.N = len(self.matrix)
+                        self.predict(test[i], self.xCol)
+                        #Calculate MSE --> TEST
+                        for register in range(self.N):
+                            for e in range(self.nY):
+                                mse += ((test[i].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.N)
+                        mseList.append(mse)
+
+                    mseFold = np.mean(mseList)
+                    mseStd = np.std(mseList)
+                    result = result.append({"M": m, "J": j, "v": v, "MSE": mse, "std": mseStd}, ignore_index=True)
+
+        self.matrix = originalMatrix
+        self.N = len(self.matrix)
+
+        result = result.sort_values("MSE", ignore_index=True)
+        result = result.astype({"M": int, "J": int, "v": float, "MSE": float, "std": float})
+        return result
+
+    def gridTestSample(self, arrJ, arrM, arrv):
+
+        # Built EATBoost
+        originalMatrix = self.matrix
+        # 70%-30%
+        training = self.matrix.sample(frac=0.7).reset_index(drop=True)
+        test = self.matrix.drop(list(training.index)).reset_index(drop=True)
+
+        # Dataframe to save results
+        result = pd.DataFrame(columns=["M", "J", "v", "MSE"])
+
+        #Check all combinations (J, M, v)
+        for m in arrM:
+            print("J: ", arrJ)
+            for j in arrJ:
+                for v in arrv:
+
+                    mse = 0 #Ini. MSE
+
+                    self.matrix = training
                     self.N = len(self.matrix)
-                    self.calculate_eat_boost()
+                    self.fit_eat_boost(j, m, v)
 
                     #predict
-                    self.matrix = self.test
+                    self.matrix = test
                     self.N = len(self.matrix)
-                    self._predictData(self.test)
+                    self.predict(test, self.xCol)
                     #Calculate MSE --> TEST
-                    for register in range(len(self.test)):
-                        for j in range(self.nY):
-                            self.mse += ((self.test.iloc[register, self.y[j]] - self.pred[register][j]) ** 2)*(1/self.N)
-                    if self.mse < mse_min:
-                        mse_min = self.mse
-                        self.bestJ = self.J
-                        self.bestM = self.M
-                        self.bestv = self.v
-                    print(" ----- (", self.J, ", ", self.M, ", ", self.v, ") = ", self.mse)
+                    for register in range(self.N):
+                        for e in range(self.nY):
+                            mse += ((test.iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.N)
+                    result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
-        #Save best combination
-        self.mse = mse_min
-        self.J = self.bestJ
-        self.M = self.bestM
-        self.v = self.bestv
-        self.matrix = self.originalMatrix
+        self.matrix = originalMatrix
         self.N = len(self.matrix)
-        print("J: ", self.J, ", M: ", self.M, ", v: ", self.v, ", mse: ", self.mse)
 
-    def calculate_eat_boost(self):
+        result = result.sort_values("MSE", ignore_index=True)
+        result = result.astype({"M": int, "J": int, "v": float, "MSE": float})
+        return result
+
+
+    def fit_eat_boost(self, J, M, v):
+        self.J = J
+        self.M = M
+        self.v = v
         # Step 2
         for m in range(self.M):  # 0 is already calculated (at init)
             # Get residuals
@@ -100,14 +149,13 @@ class EATBoost:
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
             deep_eat.fit_deep_EAT()
             self.trees.append(deep_eat.tree)
-            #print(self.trees)
             # Update prediction
             deep_eat_pred = deep_eat._predict()
             for i in range(self.N):
                 for j in range(self.nY):
                     self.pred[i][j] += self.v*deep_eat_pred.iloc[i, j]
 
-                #print("pred: ", self.pred)
+
     # Prediction of eat boot
     def predict(self, data, x):
         if type(data) == list:
@@ -124,19 +172,14 @@ class EATBoost:
 
         for i in range(len(data)):
             pred = self._predictor(data.iloc[i, x])
-            #print("x: ", x, " reg: ", data.iloc[i, x])
-            #print(pred)
             for j in range(self.nY):
                 data.loc[i, "p_" + str(self.yCol[j])] = pred[j]
         return data
 
     def _predictor(self, register):
         f = np.array(self.f0)
-        #print("f0: ", f)
         for tree in self.trees:
-            #print(self._deep_eat_predictor(tree, register))
             f += self.v*np.array(self._deep_eat_predictor(tree, register))
-        #print("f: ", f)
         return f
 
 
