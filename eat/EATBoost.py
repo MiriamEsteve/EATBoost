@@ -203,21 +203,9 @@ class EATBoost:
         my_label = "EAT"
         pylab.step(datos['x1'], datos["p_y"], 'r', color="c", label=my_label, where="post")
 
-        # --------------- Graphic multi_EAT ----------------------------
-        # my_label = "multi_EAT"
-        # pylab.step(datos['x1'], datos["m_y0"], 'r', color="g", label=my_label, where="post")
-
         # --------------- Graphic EAT_DEA ----------------------------
         # my_label = "EAT_DEA"
         # pylab.plot(datos['X'], datos["y_DEA_EAT"], 'r-', color="m", label=my_label)
-
-        # --------------- Graphic CART ----------------------------
-        # my_label = "CART"
-        # pylab.step(datos['X'], datos["yCART"], 'r', color="y", label=my_label, where="post")
-
-        # --------------- Graphic CART ----------------------------
-        # my_label = "Pruned CART"
-        # pylab.step(datos['X'], datos["yCART.pruned"], 'r', color="m", label=my_label, where="post")
 
         # --------------- Graphic  ----------------------------
         # pylab.title("Deep EAT")
