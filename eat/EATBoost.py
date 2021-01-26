@@ -64,7 +64,7 @@ class EATBoost:
         for m in arrM:
             for j in arrJ:
                 for v in arrv:
-                    mseList = []
+                    #mseList = []
                     mse = 0
                     for k in range(folds):
                         self.matrix = training[k]
