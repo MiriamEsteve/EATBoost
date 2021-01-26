@@ -8,6 +8,11 @@ dataset = eat.Data(1, 50).data
 x = ["x1", "x2"]
 y = ["y1", "y2"]
 
+data = eat.Data2(50, 3).data
+dataset = data.iloc[:,:-1].copy()
+y = [dataset.columns[-1]]
+x = list(dataset.drop(y, axis=1).columns)
+
 numStop = 5
 fold = 5
 
@@ -26,7 +31,7 @@ graph = graphviz.Source(dot_data, filename="tree", format="png")
 graph.view()
 
 #Prediction
-x_p = ["x1", "x2"]
+x_p = ["x1", "x2", "x3"]
 data_pred = dataset.loc[:10, x_p]  #without y, if you want it
 data_prediction = model.predict(data_pred, x_p)
 data_prediction  #show "p" predictions

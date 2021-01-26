@@ -5,30 +5,6 @@ INF = math.inf
 
 from eat.deep_EAT import deepEAT
 
-class style():
-    BLACK = '\033[30m'
-    RED = '\033[31m'
-    GREEN = '\033[32m'
-    YELLOW = '\033[33m'
-    BLUE = '\033[34m'
-    MAGENTA = '\033[35m'
-    CYAN = '\033[36m'
-    WHITE = '\033[37m'
-    UNDERLINE = '\033[4m'
-    RESET = '\033[0m'
-
-class EXIT(Exception):
-    def __init__(self, *args):
-        if args:
-            self.message = args[0]
-        else:
-            self.message = None
-
-    def __str__(self):
-        if self.message:
-            return style.YELLOW + "\n\n" + self.message + style.RESET
-
-
 class EAT(deepEAT):
     def __init__(self, matrix, x, y, numStop, fold):
         self.xCol = x
@@ -263,3 +239,26 @@ class EAT(deepEAT):
 
         self.tree = self.Tk["tree"]
         #print("   Tk->score Select = ", self.Tk["score"], ", tree size = ", len(self.Tk["tree"]))
+
+class style():
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+class EXIT(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return style.YELLOW + "\n\n" + self.message + style.RESET
