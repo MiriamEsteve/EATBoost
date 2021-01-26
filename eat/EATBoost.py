@@ -47,12 +47,12 @@ class EATBoost:
             # Training
             training.append(self.originalMatrix.drop(list(test[v].index)).reset_index(drop=True))
 
-        return (test, training)
+        return test, training
 
     def gridCV(self, arrJ, arrM, arrv, folds):
 
         # Generate folds for CV
-        (test, training) = self._generateFolds(folds)
+        test, training = self._generateFolds(folds)
 
         # Dataframe to save results
         result = pd.DataFrame([], columns=["M", "J", "v", "MSE"])
@@ -70,13 +70,12 @@ class EATBoost:
                         #predict
                         self.matrix = test[k]
                         self.N = len(self.matrix)
-                        pred = self.predict(test[k], self.xCol)
+                        pred = self.predict(test[k], self.xCol).iloc[:,-self.nY:]
                         #Calculate MSE --> TEST
                         for register in range(self.N):
                             for e in range(self.nY):
                                 mse += ((test[k].iloc[register, self.y[e]] - pred.iloc[register, e]) ** 2)
                     mse /= self.NSample
-
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
         self.matrix = self.originalMatrix.copy()
@@ -108,7 +107,7 @@ class EATBoost:
                     #predict
                     self.matrix = test
                     self.N = len(self.matrix)
-                    pred = self.predict(test, self.xCol)
+                    pred = self.predict(test, self.xCol).iloc[:,-self.nY:]
                     #Calculate MSE --> TEST
                     for register in range(self.N):
                         for e in range(self.nY):
@@ -156,7 +155,7 @@ class EATBoost:
         if type(data) == list:
             return self._predictor(pd.Series(data))
 
-        data = pd.DataFrame(data)
+        data = pd.DataFrame(data.copy())
         #Check if columns X are in data
         # self._check_columnsX_in_data(data, x)
         #Check length columns X
