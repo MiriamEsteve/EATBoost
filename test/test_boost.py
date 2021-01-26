@@ -26,8 +26,13 @@ modelBoost = eat.EATBoost(dataset, x, y, numStop)
 resultCV = modelBoost.gridCV(J,M,v,5)
 resultTestSample = modelBoost.gridTestSample(J,M,v)
 
+#CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
-predBoost = modelBoost.predict(dataset, x)
+predBoostCV = modelBoost.predict(dataset, x)
+
+#Test
+modelBoost.fit_eat_boost(resultTestSample.loc[0, "J"], resultTestSample.loc[0, "M"], resultTestSample.loc[0, "v"])
+predBoostTestSample = modelBoost.predict(dataset, x)
 
 #Create model
 model = eat.deepEAT(dataset, x, y, numStop)

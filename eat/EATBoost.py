@@ -59,7 +59,7 @@ class EATBoost:
         (test, training) = self._generateFolds(folds)
 
         # Dataframe to save results
-        result = pd.DataFrame([], columns=["M", "J", "v", "MSE", "std"])
+        result = pd.DataFrame([], columns=["M", "J", "v", "MSE"])
 
         #Check all combinations (J, M, v)
         for m in arrM:
@@ -81,7 +81,7 @@ class EATBoost:
                             for e in range(self.nY):
                                 mse += ((test[k].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)
                         #mseList.append(mse)
-                    mse *= (1/self.NSample)
+                    mse /= self.NSample
                     #mseFold = np.mean(mseList)
                     #mseStd = np.std(mseList)
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
@@ -106,7 +106,6 @@ class EATBoost:
 
         #Check all combinations (J, M, v)
         for m in arrM:
-            print("J: ", arrJ)
             for j in arrJ:
                 for v in arrv:
                     mse = 0 #Ini. MSE
