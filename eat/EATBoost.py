@@ -131,7 +131,6 @@ class EATBoost:
         result = result.astype({"M": int, "J": int, "v": float, "MSE": float})
         return result
 
-
     def fit_eat_boost(self, J, M, v):
         self.J = J
         self.M = M
