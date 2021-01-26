@@ -3,7 +3,7 @@ import math
 from eat.deep_EAT_for_EATBoost import deepEATBoost
 import pandas as pd
 import numpy as np
-# import pylab
+import matplotlib.pyplot as plt
 
 INF = math.inf
 
@@ -225,29 +225,30 @@ class EATBoost:
 
         # ------------  Graphic Data ---------------------
         my_label = 'Data'
-        pylab.plot(datos['x1'], datos['y'], 'bo', color="b", markersize=5, label=my_label)
+        plt.plot(datos['x1'], datos['y'], 'bo', color="b", markersize=5, label=my_label)
 
         # ------------  Graphic frontera Dios ---------------------
         my_label = 'Th Frontier'
-        pylab.plot(datos['x1'], datos['yD'], 'r--', label=my_label)  # Experimentos Monte Carlo
+        plt.plot(datos['x1'], datos['yD'], 'r--', label=my_label)  # Experimentos Monte Carlo
 
         # --------------- Graphic FDH ----------------------------
         # my_label = "FDH"
-        # pylab.step(datos['x1'], datos["yFDH"], 'r', color="g", label=my_label, where="post")
+        # plt.step(datos['x1'], datos["yFDH"], 'r', color="g", label=my_label, where="post")
 
         # --------------- Graphic mono_EAT ----------------------------
         my_label = "EAT"
-        pylab.step(datos['x1'], datos["p_y"], 'r', color="c", label=my_label, where="post")
+        plt.step(datos['x1'], datos["p_y"], 'r', color="c", label=my_label, where="post")
 
         # --------------- Graphic EAT_DEA ----------------------------
         # my_label = "EAT_DEA"
-        # pylab.plot(datos['X'], datos["y_DEA_EAT"], 'r-', color="m", label=my_label)
+        # plt.plot(datos['X'], datos["y_DEA_EAT"], 'r-', color="m", label=my_label)
 
         # --------------- Graphic  ----------------------------
-        # pylab.title("Deep EAT")
-        pylab.xlabel("X")
-        pylab.ylabel("Y")
-        pylab.legend(loc='upper left')
+        # plt.title("Deep EAT")
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.legend(loc='upper left')
+        plt.show()
 
 class style():
     BLACK = '\033[30m'
