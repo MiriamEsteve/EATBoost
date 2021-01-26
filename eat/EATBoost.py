@@ -65,32 +65,31 @@ class EATBoost:
             for j in arrJ:
                 for v in arrv:
                     mseList = []
-                    for i in range(folds):
-                        mse = 0 #Ini. MSE
-
-                        self.matrix = training[i]
+                    mse = 0
+                    for k in range(folds):
+                        self.matrix = training[k]
                         self.N = len(self.matrix)
-                        self.fit_eat_boost(j, m , v)
+                        self.fit_eat_boost(j, m, v)
 
                         #predict
-                        self.matrix = test[i]
+                        self.matrix = test[k]
                         self.N = len(self.matrix)
-                        self.predict(test[i], self.xCol)
+                        self.predict(test[k], self.xCol)
                         #Calculate MSE --> TEST
                         for register in range(self.N):
                             for e in range(self.nY):
-                                mse += ((test[i].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.N)
+                                mse += ((test[k].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)
                         mseList.append(mse)
-
-                    mseFold = np.mean(mseList)
-                    mseStd = np.std(mseList)
-                    result = result.append({"M": m, "J": j, "v": v, "MSE": mse, "std": mseStd}, ignore_index=True)
+                    mse *= (1/self.N)
+                    #mseFold = np.mean(mseList)
+                    #mseStd = np.std(mseList)
+                    result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
         self.matrix = originalMatrix
         self.N = len(self.matrix)
 
         result = result.sort_values("MSE", ignore_index=True)
-        result = result.astype({"M": int, "J": int, "v": float, "MSE": float, "std": float})
+        result = result.astype({"M": int, "J": int, "v": float, "MSE": float})
         return result
 
     def gridTestSample(self, arrJ, arrM, arrv):
