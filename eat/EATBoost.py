@@ -23,7 +23,6 @@ class EATBoost:
         self.N = len(self.matrix)  # Num. rows in dataset
 
         self.numStop = numStop #Stop rule
-        self.realJ = [] #list real J for each M
         self.J = J #Num. final leaves
         self.M = M #Num. steps
         self.v = v #Learning rate
