@@ -22,6 +22,7 @@ class EATBoost:
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
         self.N = len(self.matrix)  # Num. rows in dataset
+        self.NSample = len(self.matrix)
 
         self.numStop = numStop  #Stop rule
         self.J = 0 #Num. final leaves
@@ -79,8 +80,8 @@ class EATBoost:
                         for register in range(self.N):
                             for e in range(self.nY):
                                 mse += ((test[k].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)
-                        mseList.append(mse)
-                    mse *= (1/self.N)
+                        #mseList.append(mse)
+                    mse *= (1/self.NSample)
                     #mseFold = np.mean(mseList)
                     #mseStd = np.std(mseList)
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
@@ -108,7 +109,6 @@ class EATBoost:
             print("J: ", arrJ)
             for j in arrJ:
                 for v in arrv:
-
                     mse = 0 #Ini. MSE
 
                     self.matrix = training
@@ -122,7 +122,7 @@ class EATBoost:
                     #Calculate MSE --> TEST
                     for register in range(self.N):
                         for e in range(self.nY):
-                            mse += ((test.iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.N)
+                            mse += ((test.iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.NSample)
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
         self.matrix = originalMatrix
