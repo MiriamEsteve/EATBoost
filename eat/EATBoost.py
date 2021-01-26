@@ -13,7 +13,7 @@ class EATBoost:
         #self._checkBoost_enter_parameters(matrix, x, y, numStop)
 
         self.matrix = matrix.loc[:, x + y]  # Order variables
-        self.originalMatrix = matrix.loc[:, x + y]  # Order variables
+        self.originalMatrix = matrix.copy()  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
         self.xCol = x
@@ -34,7 +34,6 @@ class EATBoost:
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
         self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
         self.f0 = self.pred[0].copy()
-        self.tree = -1
 
 
     def _generateFolds(self, folds):
@@ -52,9 +51,6 @@ class EATBoost:
 
     def gridCV(self, arrJ, arrM, arrv, folds):
 
-        # Built EATBoost
-        originalMatrix = self.matrix
-
         # Generate folds for CV
         (test, training) = self._generateFolds(folds)
 
@@ -65,7 +61,6 @@ class EATBoost:
         for m in arrM:
             for j in arrJ:
                 for v in arrv:
-                    #mseList = []
                     mse = 0
                     for k in range(folds):
                         self.matrix = training[k]
@@ -75,18 +70,16 @@ class EATBoost:
                         #predict
                         self.matrix = test[k]
                         self.N = len(self.matrix)
-                        self.predict(test[k], self.xCol)
+                        pred = self.predict(test[k], self.xCol)
                         #Calculate MSE --> TEST
                         for register in range(self.N):
                             for e in range(self.nY):
-                                mse += ((test[k].iloc[register, self.y[e]] - self.pred[register][e]) ** 2)
-                        #mseList.append(mse)
+                                mse += ((test[k].iloc[register, self.y[e]] - pred.iloc[register, e]) ** 2)
                     mse /= self.NSample
-                    #mseFold = np.mean(mseList)
-                    #mseStd = np.std(mseList)
+
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
-        self.matrix = originalMatrix
+        self.matrix = self.originalMatrix.copy()
         self.N = len(self.matrix)
 
         result = result.sort_values("MSE", ignore_index=True)
@@ -95,8 +88,6 @@ class EATBoost:
 
     def gridTestSample(self, arrJ, arrM, arrv):
 
-        # Built EATBoost
-        originalMatrix = self.matrix
         # 70%-30%
         training = self.matrix.sample(frac=0.7).reset_index(drop=True)
         test = self.matrix.drop(list(training.index)).reset_index(drop=True)
@@ -117,14 +108,15 @@ class EATBoost:
                     #predict
                     self.matrix = test
                     self.N = len(self.matrix)
-                    self.predict(test, self.xCol)
+                    pred = self.predict(test, self.xCol)
                     #Calculate MSE --> TEST
                     for register in range(self.N):
                         for e in range(self.nY):
-                            mse += ((test.iloc[register, self.y[e]] - self.pred[register][e]) ** 2)*(1/self.NSample)
+                            mse += ((test.iloc[register, self.y[e]] - pred.iloc[register, e]) ** 2)
+                    mse /= self.N
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
-        self.matrix = originalMatrix
+        self.matrix = self.originalMatrix.copy()
         self.N = len(self.matrix)
 
         result = result.sort_values("MSE", ignore_index=True)
@@ -135,6 +127,12 @@ class EATBoost:
         self.J = J
         self.M = M
         self.v = v
+        self.r = [[0] * self.nY for i in range(self.N)]  # residuals
+        self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in
+                     range(self.N)]  # Prediction at m-iteration
+        self.f0 = self.pred[0].copy()
+        self.trees = []
+
         # Step 2
         for m in range(self.M):  # 0 is already calculated (at init)
             # Get residuals
