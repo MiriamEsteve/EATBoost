@@ -3,47 +3,51 @@ import math
 INF = math.inf
 
 class FDH:
-    def __init__(self, matrix, x, y, numStop, fold):
+    def __init__(self, matrix, x, y):
         self.xCol = x
         self.yCol = y
-        self._check_enter_parameters(matrix, x, y, numStop, fold)
         self.matrix = matrix.loc[:, x + y]  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
-        self.NSample = len(matrix)
-        self.Sample = matrix.copy()
+        self.N = len(self.matrix)
+        self.nX = len(self.x)
+        self.nY = len(self.y)
 
     'Destructor'
     def __del__(self):
         try:
             del self.N
             del self.matrix
-            del self.td
             del self.nX
             del self.nY
-            del self.numStop
             del self.x
             del self.y
+            del self.xCol
+            del self.yCol
+
         except Exception:
             pass
 
-    def fit(self):
-        yMax = -INF
+    def predict(self):
+        for i in range(self.N):
+            pred = self._predictor(self.matrix.iloc[i, self.x])
+            for j in range(self.nY):
+                self.matrix.loc[i, "p_" + str(self.yCol[j])] = pred[j]
+        return self.matrix
+
+    def _predictor(self, XArray):
+        yMax = [-INF] * self.nY
         for n in range(self.N):
             newMax = True
             for i in range(len(XArray)):
-                if i < self.y[0]:
-                    if self.matrix.iloc[n, i] > XArray[i]:
-                        newMax = False
-                        break
-                # Else if en caso de que la 'y' no esté en la última columna
-                elif i > self.y[0]:
-                    if self.matrix.iloc[n, i + 1] > XArray[i]:
-                        newMax = False
-                        break
-
-            if newMax and yMax < self.matrix.iloc[n, self.y[0]]:
-                yMax = self.matrix.iloc[n, self.y[0]]
+                for j in range(self.nY):
+                    if i < self.y[j]:
+                        if self.matrix.iloc[n, i] > XArray[i]:
+                            newMax = False
+                            break
+            for j in range(self.nY):
+                if newMax and yMax[j] < self.matrix.iloc[n, self.y[j]]:
+                    yMax[j] = self.matrix.iloc[n, self.y[j]]
 
         return yMax
 

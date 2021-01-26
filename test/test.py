@@ -13,8 +13,8 @@ dataset = data.iloc[:,:-1].copy()
 y = [dataset.columns[-1]]
 x = list(dataset.drop(y, axis=1).columns)
 
-numStop = 5
-fold = 5
+numStop = 1
+fold = 1
 
 #Create model
 model = eat.EAT(dataset, x, y, numStop, fold)
@@ -24,6 +24,10 @@ model.fit()
 #Create deepModel
 deepModel = eat.deepEAT(dataset, x, y, numStop)
 deepModel.fit_deep_EAT()
+
+#Create FDHmodel
+FDHmodel = eat.FDH(dataset, x, y)
+predFDH = FDHmodel.predict()
 
 #Graph tree
 dot_data = model.export_graphviz('EAT')
