@@ -511,11 +511,7 @@ class Scores:
         # ------------------ Obtener fi --------------------------------------------
         fi_y1 = y1_ast / y[0]
         # fi_y2 = y2_ast / y[1]
-        print("x: ", x)
-        print("y: ", y)
-        print("ln_y1_ast", ln_y1_ast)
-        print("y*", y1_ast)
-        print("fi_y1", fi_y1)
+
         return fi_y1
 
     def fit_Theoric(self):
