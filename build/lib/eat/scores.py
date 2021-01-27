@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import math
 INF = math.inf
 from docplex.mp.model import Model
@@ -484,3 +485,41 @@ class Scores:
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._score_DDF_DEA(self.matrix.iloc[i, self.x].to_list(),
                                                    self.matrix.iloc[i, self.y].to_list())
+
+    # =============================================================================
+    # Teórica (Dios)
+    # =============================================================================
+    def _fi_Theoric(self, x, y):
+        # ---------------------- z = ln(y2, y1) ------------------------------------
+        z = np.log(y[1] / y[0])
+
+        # -------------- Pasos 2 y 3 para obtener y1*, y2* -------------------------
+        # Ln de x1 y x2
+        ln_x1 = np.log(x[0])
+        ln_x2 = np.log(x[1])
+        # Operaciones para ln_y1_ast
+        op1 = -1 + 0.5 * z + 0.25 * (z ** 2) - 1.5 * ln_x1
+        op2 = -0.6 * ln_x2 + 0.2 * (ln_x1 ** 2) + 0.05 * (ln_x2 ** 2) - 0.1 * ln_x1 * ln_x2
+        op3 = 0.05 * ln_x1 * z - 0.05 * ln_x2 * z
+        ln_y1_ast = -(op1 + op2 + op3)
+
+        # Y de ese valor determinamos y1*=exp(ln(y1*))
+        y1_ast = np.exp(ln_y1_ast)
+        # P3(Calculamos ln(y2*) como z + ln(y1*). Del ln(y2*), sacamos y2* = exp(ln(y2*))
+        # y2_ast = np.exp(ln_y1_ast + z)
+
+        # ------------------ Obtener fi --------------------------------------------
+        fi_y1 = y1_ast / y[0]
+        # fi_y2 = y2_ast / y[1]
+        print("x: ", x)
+        print("y: ", y)
+        print("fi_y1", fi_y1)
+        return fi_y1
+
+    def fit_Theoric(self):
+        nameCol = "Theoric"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._fi_Theoric(self.matrix.iloc[i, self.x].to_list(),
+                                                              self.matrix.iloc[i, self.y].to_list())

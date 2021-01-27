@@ -62,3 +62,6 @@ mdl_scores.DDF_FDH()
 mdl_scores.BCC_output_DEA()
 #Fit DDF of DEA
 mdl_scores.DDF_DEA()
+
+#Thoric 2X, 2Y
+mdl_scores.fit_Theoric()
