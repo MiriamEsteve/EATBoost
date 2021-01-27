@@ -66,25 +66,3 @@ mdl_scores.DDF_DEA()
 #Thoric 2X, 2Y
 mdl_scores.fit_Theoric()
 
-
-
-#Puntos 'a'
-a_key = "a"
-lst1 = [a_dict[a_key] for a_dict in model.tree]
-lst2 = [a_dict[a_key] for a_dict in model.tree]
-
-M = [2]
-total_list = []
-for m in range(len(M[0])): #self.trees para saber cuántos árboles totales tengo
-    lst1 = [a_dict[a_key] for a_dict in model.tree]
-    total_list.append(lst1)
-
-result = []
-
-
-for l1 in range(len(lst1)):
-    for l2 in range(len(lst2)):
-        print(lst1[l1])
-        print(lst2[l2])
-        print(np.maximum(lst1[l1], lst2[l2]))
-        result.append(list(np.maximum(lst1[l1], lst2[l2])))

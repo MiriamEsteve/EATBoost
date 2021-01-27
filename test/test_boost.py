@@ -1,5 +1,6 @@
 import eat
 import pandas as pd
+import numpy as np
 
 #Generate simulated data (seed, N)
 dataset = eat.Data(1, 50).data
@@ -57,3 +58,66 @@ modelBoost.fit_eat_boost(4,2,1)
 predBoost = modelBoost.predict(dataset, x)
 predBoost["yD"] = data["yD"]
 modelBoost.grafico2D(predBoost)
+
+
+
+
+def get_a(tree):
+    list_a = []
+    for node in tree:
+        if node["SL"] == -1:
+            list_a.append(node["a"])
+    return list_a
+
+def get_list_a(trees_list):
+    list_de_a = []
+
+    for tree in trees_list:
+        list_de_a.append(get_a(tree))
+    return list_de_a
+
+def get_interseccion_de_a(list_de_a):
+    a = list_de_a[0]
+
+    for e in list_de_a[1:]:
+        for pos in range(len(e)):
+            if a[pos] < e[pos]:
+                a[pos] = e[pos]
+    return a
+
+
+import copy
+
+def get_combination(trees_list):
+    final_a = []
+
+    lists_de_a = get_list_a(trees_list)
+
+    pos = [0] * len(lists_de_a)
+    pos2 = [0] * len(lists_de_a)
+
+    for i in range(len(lists_de_a)):
+        pos2[i] = len(lists_de_a[i])
+
+    while 1:
+        list_de_a = []
+        for i in range(len(lists_de_a)):
+            #print(lists_de_a[i])
+            list_de_a.append(copy.copy(lists_de_a[i][pos[i]]))
+
+        a = get_interseccion_de_a(list_de_a)
+        #print("pos: ", pos, " - a: ", a)
+        final_a.append(copy.copy(a))
+
+        for i in range(len(pos)):
+            pos[i] += 1
+            if pos[i] < pos2[i]:
+                break
+            pos[i] = 0
+
+        if np.sum(np.array(pos)) == 0:
+            break
+    return final_a #Quitar duplicados FUTURO
+
+
+final_a = get_combination(modelBoost.trees)
