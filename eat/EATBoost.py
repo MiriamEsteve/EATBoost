@@ -4,6 +4,7 @@ from eat.deep_EAT_for_EATBoost import deepEATBoost
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from random import randint
 
 INF = math.inf
 
@@ -60,6 +61,7 @@ class EATBoost:
         #Check all combinations (J, M, v)
         for m in arrM:
             for j in arrJ:
+                print("Probando para M = ", m, "y J = ", j)
                 for v in arrv:
                     mse = 0
                     for k in range(folds):
@@ -97,6 +99,7 @@ class EATBoost:
         #Check all combinations (J, M, v)
         for m in arrM:
             for j in arrJ:
+                print("Probando para M = ", m, "y J = ", j)
                 for v in arrv:
                     mse = 0 #Ini. MSE
 
@@ -249,6 +252,38 @@ class EATBoost:
         plt.ylabel("Y")
         plt.legend(loc='upper left')
         plt.show()
+
+
+    def plotCV(self, result):
+        # Generar los colores
+        colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:pink", "tab:grey", "tab:cyan"]
+        if (len(result['v'].unique()) > len(colors) ):
+            colors = []
+            for i in range(len(result['v'].unique())):
+                colors.append('#%06X' % randint(0, 0xFFFFFF))
+        # Grafica para j
+        for j in result['J'].unique():
+            plt.clf()
+            plt.title("MSE for J = " + str(j))
+            plt.xlabel("Number of iterations (M)")
+            plt.ylabel("MSE")
+
+            plt.ylim((result['MSE'].min()-10000, result['MSE'].max()+10000))
+
+            # resultJ = result.loc[result['J'] == j]
+            # Funcion para cada v
+            i = 0
+            for v in result['v'].unique():
+                cv_j_v = result.loc[(result['J'] == j) & (result['v'] == v)]
+                # Eje x = M
+                # Eje y = MSE
+                plt.errorbar(cv_j_v['M'], cv_j_v['MSE'], color=colors[i], label = str(v), capsize=3)
+                i += 1
+
+            plt.legend(loc='upper right')
+            plt.savefig("test/graficas/graficaJ="+str(j)+".png")
+            # plt.show()
+
 
 class style():
     BLACK = '\033[30m'

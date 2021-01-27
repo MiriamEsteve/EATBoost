@@ -1,9 +1,8 @@
 import eat
 import pandas as pd
-from plotHyperparameters import plotCV
 
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 10).data
+dataset = eat.Data(1, 50).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
@@ -17,16 +16,18 @@ x = ["x1", "x2"]
 y = ["y"]'''
 
 numStop = 5
-J = [4, 5]
-v = [0.1, 0.15]
-M = [2, 3]
-
+folds = 5
+J = [i for i in range(4,9,1)]
+v = [round(0.2+0.05*i,2) for i in range(1,5,1)]
+M = [i for i in range(15, 26, 1)]
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop)
 #Fit model
-resultCV = modelBoost.gridCV(J,M,v,5)
-plotCV(resultCV)
+resultCV = modelBoost.gridCV(J,M,v,folds)
+modelBoost.plotCV(resultCV)
 resultTestSample = modelBoost.gridTestSample(J,M,v)
+modelBoost.plotCV(resultTestSample)
+
 
 #CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
