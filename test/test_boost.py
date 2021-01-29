@@ -18,9 +18,9 @@ y = ["y"]'''
 
 numStop = 5
 folds = 5
-J = [i for i in range(4,9,1)]
-v = [round(0.2+0.05*i,2) for i in range(1,5,1)]
-M = [i for i in range(15, 26, 1)]
+J = [i for i in range(10,12,1)]
+v = [round(0.1+0.05*i,2) for i in range(1,5,1)]
+M = [i for i in range(20, 26, 1)]
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop)
 #Fit model

@@ -121,7 +121,7 @@ class EATBoost:
         self.matrix = self.originalMatrix.copy()
         self.N = len(self.matrix)
 
-        result = result.sort_values("MSE", ignore_index=True)
+        result = result.sort_values("MSE").reset_index(drop=True)
         result = result.astype({"M": int, "J": int, "v": float, "MSE": float})
         return result
 
