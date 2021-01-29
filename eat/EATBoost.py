@@ -173,13 +173,15 @@ class EATBoost:
                 data.loc[i, "p_" + str(self.yCol[j])] = pred[j]
         return data
 
-    def _predict_a(self, final_a):
-        y_result = final_a.copy()
+    #Predict perfiles de "a". Para los scores
+    def _predict_a(self, trees, final_a):
+        self.trees = trees
+        y_result = [] * len(final_a)
 
-        for i in range(len(y_result)):
-            pred = self._predictor(final_a[i])
-            for j in range(self.nY):
-                y_result[i][j] = pred[j]
+        for i in range(len(final_a)):
+            if type(final_a[i]) == list:
+                y_result.append(self._predictor(pd.Series(final_a[i])).tolist())
+
         return y_result
 
     def _predictor(self, register):

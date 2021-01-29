@@ -5,7 +5,7 @@ import math
 INF = math.inf
 
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 50).data
+dataset = eat.Data(1, 5).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
@@ -13,7 +13,7 @@ y = ["y1", "y2"]
 
 
 '''
-data = eat.Data2(10, 2).data
+data = eat.Data2(5, 2).data
 dataset = data.iloc[:,:-1].copy()
 
 x = ["x1", "x2"]
@@ -57,8 +57,8 @@ x = ["x1"]
 y = ["y"]
 
 # model.grafico2D(predictDeepEAT)
-modelBoost = eat.EATBoost(dataset, x, y, 5)
-modelBoost.fit_eat_boost(4,2,1)
+modelBoost = eat.EATBoost(dataset, x, y, 1)
+modelBoost.fit_eat_boost(2,3,1)
 predBoost = modelBoost.predict(dataset, x)
 predBoost["yD"] = data["yD"]
 modelBoost.grafico2D(predBoost)
@@ -145,13 +145,14 @@ def get_combination(trees_list):
     return final_a
 
 def get_estimations(final_a):
-    y_result = final_a.copy()
+    y_result = [] * len(final_a)
 
-    for i in range(len(y_result)):
-        pred = modelBoost._predictor(final_a[i])
-        for j in range(len(y)):
-            y_result[i][j] = pred[j]
+    for i in range(len(final_a)):
+        if type(final_a[i]) == list:
+            y_result.append(modelBoost._predictor(pd.Series(final_a[i])).tolist())
+
     return y_result
 
 
 final_a = get_combination(modelBoost.trees)
+final_y = get_estimations(final_a)

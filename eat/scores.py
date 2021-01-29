@@ -4,6 +4,7 @@ import math
 INF = math.inf
 from docplex.mp.model import Model
 import copy
+from eat import EATBoost
 
 
 class style():
@@ -358,9 +359,7 @@ class Scores:
         self.atreeTk = final_a
 
     def _get_estimations(self):
-        final_y = []
-
-        self.ytreeTk = final_y
+        self.ytreeTk = EATBoost._predict_a(self.tree)
 
     def _scoreBoostEAT_BCC_output(self, x, y):
         self._get_combination()
