@@ -188,6 +188,7 @@ class EATBoost:
     def _predictor(self, register):
         f = np.array(self.f0)
         for tree in self.trees:
+            print(tree)
             f += self.v*np.array(self._deep_eat_predictor(tree, register))
         return f
 

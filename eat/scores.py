@@ -326,7 +326,7 @@ class Scores:
     def _get_combination(self):
         final_a = []
 
-        lists_de_a, lists_de_b = self._get_list_a_b(self.tree)
+        lists_de_a, lists_de_b = self._get_list_a_b(self.tree.trees)
 
         pos = [0] * len(lists_de_a)
         pos2 = [0] * len(lists_de_a)
@@ -359,8 +359,11 @@ class Scores:
         self.atreeTk = final_a
 
     def _get_estimations(self):
-        modelBoost = EATBoost(self.matrix, self.x, self.y, 1)
-        self.ytreeTk = modelBoost._predict_a(self.tree.copy(), self.atreeTk.copy())
+        self.ytreeTk = [] * len(self.atreeTk)
+
+        for i in range(len(self.atreeTk)):
+            if type(self.atreeTk[i]) == list:
+                self.ytreeTk.append(self.tree._predictor_a(self.tree.trees, pd.Series(self.atreeTk[i])).tolist())
 
     def _scoreBoostEAT_BCC_output(self, x, y):
         self._get_combination()

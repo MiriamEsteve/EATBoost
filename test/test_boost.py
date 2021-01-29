@@ -162,7 +162,7 @@ final_y = get_estimations(final_a)
 final_a
 final_y
 
-modelScore = eat.Scores(dataset,x, y, modelBoost.trees)
+modelScore = eat.Scores(dataset,x, y, modelBoost)
 modelScore._get_combination()
 modelScore.atreeTk
 modelScore._get_estimations()
