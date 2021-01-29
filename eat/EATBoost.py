@@ -11,9 +11,8 @@ INF = math.inf
 class EATBoost:
     def __init__(self, matrix, x, y, numStop):
         'Constructor for BoostEAT tree'
-        #self._checkBoost_enter_parameters(matrix, x, y, numStop)
+        self._checkBoost_enter_parameters(matrix, x, y, numStop)
 
-        self.matrix = matrix.loc[:, x + y]  # Order variables
         self.originalMatrix = matrix.copy()  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
@@ -175,12 +174,14 @@ class EATBoost:
 
     #Predict perfiles de "a". Para los scores
     def _predict_a(self, trees, final_a):
-        self.trees = trees
         y_result = [] * len(final_a)
 
         for i in range(len(final_a)):
             if type(final_a[i]) == list:
-                y_result.append(self._predictor(pd.Series(final_a[i])).tolist())
+                print(final_a[i])
+                pred = self._predictor_a(trees, pd.Series(final_a[i])).tolist()
+                y_result.append(copy.copy(pred))
+                print(pred)
 
         return y_result
 
@@ -190,6 +191,11 @@ class EATBoost:
             f += self.v*np.array(self._deep_eat_predictor(tree, register))
         return f
 
+    def _predictor_a(self, trees, register):
+        f = np.array(self.f0)
+        for tree in trees:
+            f += self.v*np.array(self._deep_eat_predictor(tree, register))
+        return f
 
     # Methods to predict in deep_eat trees
     def _deep_eat_predictor(self, tree, register):
@@ -209,10 +215,12 @@ class EATBoost:
 
 
     def _checkBoost_enter_parameters(self, matrix, x, y, numStop):
-
         #var. x and var. y have been procesed
         if type(x[0]) == int or type(y[0]) == int:
+            self.matrix = matrix
             return
+        else:
+            self.matrix = matrix.loc[:, x + y]  # Order variables
 
         if len(matrix) == 0:
             raise EXIT("ERROR. The dataset must contain data")

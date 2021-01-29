@@ -20,6 +20,7 @@ x = ["x1", "x2"]
 y = ["y"]
 '''
 
+'''
 numStop = 5
 folds = 5
 J = [i for i in range(10,12,1)]
@@ -56,12 +57,14 @@ dataset = data.iloc[:,:-1].copy()
 x = ["x1"]
 y = ["y"]
 
+'''
+
 # model.grafico2D(predictDeepEAT)
 modelBoost = eat.EATBoost(dataset, x, y, 1)
-modelBoost.fit_eat_boost(2,3,1)
-predBoost = modelBoost.predict(dataset, x)
-predBoost["yD"] = data["yD"]
-modelBoost.grafico2D(predBoost)
+modelBoost.fit_eat_boost(2,2,1)
+#predBoost = modelBoost.predict(dataset, x)
+#predBoost["yD"] = data["yD"]
+#modelBoost.grafico2D(predBoost)
 
 
 
@@ -149,10 +152,18 @@ def get_estimations(final_a):
 
     for i in range(len(final_a)):
         if type(final_a[i]) == list:
-            y_result.append(modelBoost._predictor(pd.Series(final_a[i])).tolist())
+            y_result.append(modelBoost._predictor_a(modelBoost.trees, pd.Series(final_a[i])).tolist())
 
     return y_result
 
 
 final_a = get_combination(modelBoost.trees)
 final_y = get_estimations(final_a)
+final_a
+final_y
+
+modelScore = eat.Scores(dataset,x, y, modelBoost.trees)
+modelScore._get_combination()
+modelScore.atreeTk
+modelScore._get_estimations()
+modelScore.ytreeTk
