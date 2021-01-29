@@ -3,6 +3,8 @@ import numpy as np
 import math
 INF = math.inf
 from docplex.mp.model import Model
+import copy
+
 
 class style():
     BLACK = '\033[30m'
@@ -277,6 +279,139 @@ class Scores:
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._scoreEAT_DDF(self.matrix.iloc[i, self.x].to_list(),
                                                              self.matrix.iloc[i, self.y].to_list())
+
+    #EATBoost
+    def _get_a_b(self, tree):
+        list_a = []
+        list_b = []
+
+        for node in tree:
+            if node["SL"] == -1:
+                list_a.append(node["a"])
+                list_b.append(node["b"])
+        return list_a, list_b
+
+    def _get_list_a_b(self, trees_list):
+        list_de_a = []
+        list_de_b = []
+
+        for tree in trees_list:
+            a, b = self._get_a_b(tree)
+            list_de_a.append(a)
+            list_de_b.append(b)
+
+        return list_de_a, list_de_b
+
+    def _get_interseccion_de_a(self, list_de_a, list_de_b):
+        a = list_de_a[0]
+        b = list_de_b[0]
+
+        for e in list_de_b[1:]:
+            for pos in range(len(e)):
+                if b[pos] >= e[pos]:
+                    b[pos] = e[pos]
+
+        for e in list_de_a[1:]:
+            for pos in range(len(e)):
+                if a[pos] < e[pos]:
+                    a[pos] = e[pos]
+
+        for pos in range(len(a)):
+            if a[pos] > b[pos]:
+                a = "no_valid"
+                break
+        return a
+
+    def _get_combination(self):
+        final_a = []
+
+        lists_de_a, lists_de_b = self._get_list_a_b(self.tree)
+
+        pos = [0] * len(lists_de_a)
+        pos2 = [0] * len(lists_de_a)
+
+        for i in range(len(lists_de_a)):
+            pos2[i] = len(lists_de_a[i])
+
+        while 1:
+            list_de_a = []
+            list_de_b = []
+
+            for i in range(len(lists_de_a)):
+                list_de_a.append(copy.copy(lists_de_a[i][pos[i]]))
+                list_de_b.append(copy.copy(lists_de_b[i][pos[i]]))
+
+            a = self._get_interseccion_de_a(list_de_a, list_de_b)
+
+            if a == "no_valid":
+                continue
+            final_a.append(copy.copy(a))
+
+            for i in range(len(pos)):
+                pos[i] += 1
+                if pos[i] < pos2[i]:
+                    break
+                pos[i] = 0
+
+            if np.sum(np.array(pos)) == 0:
+                break
+        self.atreeTk = final_a
+
+    def _get_estimations(self):
+        final_y = []
+
+        self.ytreeTk = final_y
+
+    def _scoreBoostEAT_BCC_output(self, x, y):
+        self._get_combination()
+        self._get_estimations()
+        self._prepare_model_DEA_FDH()
+
+        self.N_leaves = len(self.atreeTk)
+
+        # create one model instance, with a name
+        m = Model(name='fi_BoostEAT')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        fi = {0: m.continuous_var(name="fi")}
+
+        # Constrain 2.4
+        name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
+
+        # Constrain 2.3
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
+
+        # Constrain 2.1 y 2.2
+        for i in range(self.nX):
+            # Constrain 2.1
+            m.add_constraint(m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= x[i])
+
+        for i in range(self.nY):
+            # Constrain 2.2
+            m.add_constraint(m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) >= fi[0] * y[i])
+
+        # objetive
+        m.maximize(fi[0])
+
+        # Model Information
+        # m.print_information()
+
+        sol = m.solve(agent='local')
+
+        # Solución
+        if (m.solution == None):
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+    def BCC_output_BoostEAT(self):
+        nameCol = "BCC_output_BoostEAT"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._scoreBoostEAT_BCC_output(self.matrix.iloc[i, self.x].to_list(),
+                                                            self.matrix.iloc[i, self.y].to_list())
 
     #FDH
     def _scoreFDH_BCC_output(self, x, y):

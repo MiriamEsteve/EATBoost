@@ -1,6 +1,8 @@
 import eat
 import pandas as pd
 import numpy as np
+import math
+INF = math.inf
 
 #Generate simulated data (seed, N)
 dataset = eat.Data(1, 50).data
@@ -10,11 +12,13 @@ x = ["x1", "x2"]
 y = ["y1", "y2"]
 
 
-'''data = eat.Data2(10, 2).data
+'''
+data = eat.Data2(10, 2).data
 dataset = data.iloc[:,:-1].copy()
 
 x = ["x1", "x2"]
-y = ["y"]'''
+y = ["y"]
+'''
 
 numStop = 5
 folds = 5
@@ -62,27 +66,45 @@ modelBoost.grafico2D(predBoost)
 
 
 
-def get_a(tree):
+def get_a_b(tree):
     list_a = []
+    list_b = []
+
     for node in tree:
         if node["SL"] == -1:
             list_a.append(node["a"])
-    return list_a
+            list_b.append(node["b"])
+    return list_a, list_b
 
-def get_list_a(trees_list):
+def get_list_a_b(trees_list):
     list_de_a = []
+    list_de_b = []
 
     for tree in trees_list:
-        list_de_a.append(get_a(tree))
-    return list_de_a
+        a, b = get_a_b(tree)
+        list_de_a.append(a)
+        list_de_b.append(b)
 
-def get_interseccion_de_a(list_de_a):
+    return list_de_a, list_de_b
+
+def get_interseccion_de_a(list_de_a, list_de_b):
     a = list_de_a[0]
+    b = list_de_b[0]
+
+    for e in list_de_b[1:]:
+        for pos in range(len(e)):
+            if b[pos] >= e[pos]:
+                b[pos] = e[pos]
 
     for e in list_de_a[1:]:
         for pos in range(len(e)):
             if a[pos] < e[pos]:
                 a[pos] = e[pos]
+
+    for pos in range(len(a)):
+        if a[pos] > b[pos]:
+            a = "no_valid"
+            break
     return a
 
 
@@ -91,7 +113,7 @@ import copy
 def get_combination(trees_list):
     final_a = []
 
-    lists_de_a = get_list_a(trees_list)
+    lists_de_a, lists_de_b = get_list_a_b(trees_list)
 
     pos = [0] * len(lists_de_a)
     pos2 = [0] * len(lists_de_a)
@@ -101,12 +123,15 @@ def get_combination(trees_list):
 
     while 1:
         list_de_a = []
-        for i in range(len(lists_de_a)):
-            #print(lists_de_a[i])
-            list_de_a.append(copy.copy(lists_de_a[i][pos[i]]))
+        list_de_b = []
 
-        a = get_interseccion_de_a(list_de_a)
-        #print("pos: ", pos, " - a: ", a)
+        for i in range(len(lists_de_a)):
+            list_de_a.append(copy.copy(lists_de_a[i][pos[i]]))
+            list_de_b.append(copy.copy(lists_de_b[i][pos[i]]))
+
+        a = get_interseccion_de_a(list_de_a, list_de_b)
+        if a == "no_valid":
+            continue
         final_a.append(copy.copy(a))
 
         for i in range(len(pos)):
@@ -117,7 +142,16 @@ def get_combination(trees_list):
 
         if np.sum(np.array(pos)) == 0:
             break
-    return final_a #Quitar duplicados FUTURO
+    return final_a
+
+def get_estimations(final_a):
+    y_result = final_a.copy()
+
+    for i in range(len(y_result)):
+        pred = modelBoost._predictor(final_a[i])
+        for j in range(len(y)):
+            y_result[i][j] = pred[j]
+    return y_result
 
 
 final_a = get_combination(modelBoost.trees)
