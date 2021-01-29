@@ -178,17 +178,14 @@ class EATBoost:
 
         for i in range(len(final_a)):
             if type(final_a[i]) == list:
-                print(final_a[i])
                 pred = self._predictor_a(trees, pd.Series(final_a[i])).tolist()
                 y_result.append(copy.copy(pred))
-                print(pred)
 
         return y_result
 
     def _predictor(self, register):
         f = np.array(self.f0)
         for tree in self.trees:
-            print(tree)
             f += self.v*np.array(self._deep_eat_predictor(tree, register))
         return f
 

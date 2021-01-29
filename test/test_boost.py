@@ -167,3 +167,6 @@ modelScore._get_combination()
 modelScore.atreeTk
 modelScore._get_estimations()
 modelScore.ytreeTk
+
+#Only with last tree
+#modelBoost.trees = modelBoost.trees[-1:]
