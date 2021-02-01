@@ -1,0 +1,153 @@
+import numpy as np
+import pandas as pd
+import math
+INF = math.inf
+import matplotlib.pyplot as plt
+
+from eat.tree_RFEAT import treeRFEAT
+
+class RFEAT(treeRFEAT):
+    def __init__(self, m, matrix, x, y, numStop, s_mtry):
+        self.xCol = x
+        self.yCol = y
+        self._check_enter_parameters(matrix, x, y, numStop, s_mtry)
+        self.matrix = matrix.loc[:, x + y]  # Order variables
+        self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+        self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+        self.nX = len(self.x)
+        self.nY = len(self.y)
+        self.Sample = self.matrix.copy()
+        self.N = len(self.Sample)
+        self.numStop = numStop
+        self.s_mtry = s_mtry
+        self.mtry = 1
+
+        #Number of trees
+        self.m = m
+
+        #err
+        self.err = 0
+
+        #Tree list
+        self.forest = []
+        self.forestArray = []
+
+    def fit_RFEAT(self):
+        for i in range(self.m):
+            df_train, arr_test = self._bagging()
+            self.forestArray.append(arr_test)
+
+            # Train a tree model on this sample -> EAT
+            model = treeRFEAT.__init__(df_train, self.x, self.y, self.numStop, self.s_mtry)
+            self.forest.append(model.tree)
+        # TEST
+        for i in range(self.N):
+            reg_i = self.matrix.iloc[i]
+
+            y_EstimArr = [0] * self.nY
+
+            # Cardinal Ki
+            Ki = 0
+            for k in range(self.m):  # k in Ki
+                if self.forestArray[k][i]:
+                    Ki += 1
+                    y_EstimArr += np.array(self._predictor(self.forest[k], reg_i.loc[self.x]))
+            if all(v == 0 for v in y_EstimArr):
+                continue
+            self.err += sum((reg_i.iloc[self.y] - (y_EstimArr / Ki)) ** 2)
+
+    # =============================================================================
+    # Predictor.
+    # =============================================================================
+    def _posIdNode(self, tree, idNode):
+        for i in range(len(tree)):
+            if tree[i]["id"] == idNode:
+                return i
+        return -1
+
+    def _predictor(self, tree, register):
+        ti = 0  # Root node
+        while tree[ti]["SL"] != -1:  # Until we don't reach an end node
+            if register.iloc[tree[ti]["xi"]] < tree[ti]["s"]:
+                ti = self._posIdNode(tree, tree[ti]["SL"])
+            else:
+                ti = self._posIdNode(tree, tree[ti]["SR"])
+        return tree[ti]["y"]
+
+    def predict(self, data, x):
+        if type(data) == list:
+            return self._predictor(self.tree, pd.Series(data))
+
+        data = pd.DataFrame(data)
+        # Check if columns X are in data
+        self._check_columnsX_in_data(data, x)
+        # Check length columns X
+        if len(data.loc[0, x]) != len(self.xCol):
+            raise EXIT("ERROR. The register must be a length of " + str(len(self.xCol)))
+
+        x = data.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+        # Y resultado
+        y_result = [[] for _ in range(len(self.forest))]
+
+        for i in range(len(data)):
+            for tree in range(len(self.forest)):
+                pred = self._predictor(tree, data.iloc[i, x])
+                y_result[tree] = pred
+
+                y_result = pd.DataFrame(y_result)
+                y_result = y_result.mean(axis=0)
+            for j in range(len(self.yCol)):
+                data.loc[i, "p_" + str(self.yCol[j])] = y_result[j]
+
+        return data
+
+    def _check_columnsX_in_data(self, matrix, x):
+        cols = x
+        for col in cols:
+            if col not in matrix.columns.tolist():
+                raise EXIT("ERROR. The names of the inputs are not in the dataset")
+
+    def _check_enter_parameters(self, matrix, x, y, numStop, s_mtry):
+        if len(matrix) == 0:
+            raise EXIT("ERROR. The dataset must contain data")
+        elif len(x) == 0:
+            raise EXIT("ERROR. The inputs of dataset must contain data")
+        elif len(y) == 0:
+            raise EXIT("ERROR. The outputs of dataset must contain data")
+        elif numStop < 1:
+            raise EXIT("ERROR. The numStop must be 1 or higher")
+        elif s_mtry != "Breiman" or s_mtry != "DEA1" or s_mtry != "DEA2" or s_mtry != "DEA3" or s_mtry != "DEA4":
+            raise EXIT("ERROR. The s_mtry must be Breiman or DEA1 or DEA2 or DEA3 or DEA4")
+        else:
+            cols = x + y
+            for col in cols:
+                if col not in matrix.columns.tolist():
+                    raise EXIT("ERROR. The names of the inputs or outputs are not in the dataset")
+
+            for col in x:
+                if col in y:
+                    raise EXIT("ERROR. The names of the inputs and the outputs are overlapping")
+
+
+class style():
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    UNDERLINE = '\033[4m'
+    RESET = '\033[0m'
+
+class EXIT(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return style.YELLOW + "\n\n" + self.message + style.RESET
