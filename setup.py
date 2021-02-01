@@ -8,7 +8,7 @@ setup(
     author='Miriam Esteve',
     author_email='miriam.estevec@umh.es',
     packages=['eat'],
-    install_requires=['numpy', 'pandas', 'graphviz', 'docplex', "matplotlib", "math"],
+    install_requires=['numpy', 'pandas', 'graphviz', 'docplex', "matplotlib"],
     license='AFL-3.0',
     zip_safe=False
 )

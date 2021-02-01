@@ -4,4 +4,3 @@ graphviz
 docplex
 matplotlib
 math
-copy
