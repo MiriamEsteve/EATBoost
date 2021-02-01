@@ -101,6 +101,24 @@ class RFEAT(treeRFEAT):
 
         return data
 
+    # =============================================================================
+    # Scores
+    # =============================================================================
+    def scoreRF(self, data):
+        data["p"] = [[] for _ in range(len(data.index))]
+        yRF = [[] for _ in range(len(self.forest[0][0]["y"]))]
+        y_result = [[] for _ in range(len(self.forest[0][0]["y"]))]
+        for Xn in range(len(data)):
+            yRF = self.predict(data, data.iloc[Xn])
+
+            if not isinstance(yRF[0], float):
+                yRF = yRF[0]
+
+            for d in range(self.nY):
+                y_result[d] = round(yRF[d] / data.iloc[Xn, self.y[d]], 6)
+            data.loc[Xn, "p"] = np.min(y_result)
+        return data
+
     def _check_columnsX_in_data(self, matrix, x):
         cols = x
         for col in cols:
