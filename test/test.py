@@ -21,6 +21,9 @@ model = eat.EAT(dataset, x, y, numStop, fold)
 #Fit model
 model.fit()
 
+#Ranking var.
+model.M_Breiman()
+
 #Create deepModel
 deepModel = eat.deepEAT(dataset, x, y, numStop)
 deepModel.fit_deep_EAT()

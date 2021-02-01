@@ -360,8 +360,6 @@ class Scores:
 
     def _get_estimations(self):
         self.ytreeTk = [] * len(self.atreeTk)
-        #Only the last one
-        #self.tree.trees[-1:]
 
         for i in range(len(self.atreeTk)):
             if type(self.atreeTk[i]) == list:

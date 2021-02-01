@@ -1,7 +1,8 @@
-import sys
+import numpy as np
 import pandas as pd
 import math
 INF = math.inf
+import matplotlib.pyplot as plt
 
 from eat.deep_EAT import deepEAT
 
@@ -13,6 +14,9 @@ class EAT(deepEAT):
         self.matrix = matrix.loc[:, x + y]  # Order variables
         self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
         self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+        self.nX = len(self.x)
+        self.nY = len(self.y)
+
         'Constructor for EAT prune tree'
         # Herency
         deepEAT.__init__(self, matrix, self.x, self.y, numStop)
@@ -39,6 +43,9 @@ class EAT(deepEAT):
         self.Lv = [[]] * self.fold
         self.notLv = [[]] * self.fold
         self.generateLv()
+
+        #Imp var Breiman
+        self.M = [0] * self.nX
 
     'Destructor'
     def __del__(self):
@@ -239,6 +246,136 @@ class EAT(deepEAT):
 
         self.tree = self.Tk["tree"]
         #print("   Tk->score Select = ", self.Tk["score"], ", tree size = ", len(self.Tk["tree"]))
+
+    def _imp_var_Breiman(self):
+        # Lista que almacena los P(s^*, sm) de cada xi
+        result = []
+
+        # Lista que almecena los nodos que tiene alguna xi que no tiene alternativos
+        empty = []
+
+        # Recorrer todos los nodos t del tree
+        for t in range(len(self.tree)):
+
+            # Nodos finales ignorar
+            if self.tree[t]["s"] == -1:
+                continue
+
+            for xi in range(self.nX):
+                index = self.tree[t]["index"]
+                # Probabilidad de predecir correctamente P(s*, sm)
+                P = []
+
+                # En caso de que no sea la var. obj ordena los valores de xi del nodo t
+                # para luego probar sus valores como s (s: valor de split de la variable xi)
+                array = self.matrix.iloc[index, xi]
+                array = array.tolist()
+                array = list(set(array))  # Eliminar duplicados
+                array.sort()
+
+                if len(array) == 1:
+                    continue
+
+                # Calcula el error 'R' para cada valor 's' desde el primer menor y el último mayor
+                for i in range(1, len(array)):
+                    tL_p, tR_p = deepEAT._estimEAT(self.t["index"], xi, array[i])
+                    errL_p = tL_p["R"]
+                    errR_p = tR_p["R"]
+
+                    # if t*["s"] == t'["s"] es el mismo split
+                    if self.tree[t]["s"] == array[i]:
+                        continue
+
+                    # tL*
+                    tL_i = list(self.tree[self.tree[t]["SL"]]["index"])
+
+                    # t'L
+                    tL_p_i = list(tL_p["index"])
+
+                    # tR*
+                    tR_i = list(self.tree[self.tree[t]["SR"]]["index"])
+
+                    # t'L
+                    tR_p_i = list(tR_p["index"])
+
+                    # Importance
+                    imp = round((len(set(tL_i) & set(tL_p_i)) + len(set(tR_i) & set(tR_p_i))) / len(tL_i), 3)
+
+                    # P [xi, s*, sm, R(t'L), R(t'R), P(s*,sm)]
+                    P.append([self.tree[t]["id"], xi, self.tree[t]["s"], array[i], errL_p, errR_p, imp])
+
+                if len(P) == 0:
+                    empty.append(self.tree[t]["id"])
+                    continue
+
+                # Mejor sm de xm que máx(P(s*,sm))
+                max_value = max(l[-1] for l in P)
+
+                result.append(P[list(l[-1] == max_value for l in P) == True])
+
+        # List of list to DataFrame
+        resultado = pd.DataFrame(result)
+        resultado = resultado.rename(
+            columns={0: "id", 1: "xi", 2: "s", 3: "sm", 4: "R(tL_p)", 5: "R(tR_p)", 6: "P(s,sm)"})
+
+        # Drop nodes with xi no alternatives
+        resultado = resultado[~resultado.isin(empty)].dropna()
+
+        return resultado
+
+    def _graphicRanking(self):
+        objects = tuple(list(self.M.columns))
+        y_pos = np.arange(len(self.M.columns))
+        performance = list(self.M.iloc[1])
+
+        plt.bar(y_pos, performance, align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('M')
+        plt.title('Variable Importance Ranking')
+
+        plt.show()
+
+        plt.savefig('ranking_variable.png')
+
+        print("\n\n--------------- Variable Importance Ranking ------------")
+        print(round(self.M.iloc[1], 2).to_string(header=None, index=list(self.M.columns)))
+        print("--------------------------------------------------------")
+
+    def M_Breiman(self):
+
+        resultado = self._imp_var_Breiman()
+
+        # Recorrer todas las xi
+        for xi in range(self.nX):
+
+            try:
+                # Recorer cada nodo t de T*
+                for t in range(len(self.tree)):
+                    # Ignorar nodos hoja
+                    if self.tree[t]["s"] == -1:
+                        continue
+
+                    # Errors in sons
+                    errors = resultado.loc[(resultado["xi"] == xi) & (resultado["id"] == self.tree[t]["id"])]
+
+                    self.M[xi] += (self.tree[t]["R"] - float(errors["R(tL_p)"]) - float(errors["R(tR_p)"]))
+
+            # the code that can cause the error
+            except IndexError:
+                continue
+
+        self.M = pd.DataFrame([self.M], columns=self.x)
+
+        maxM = self.M.values.max()
+
+        if maxM != 0:
+            m = (100 * self.M) / maxM
+            self.M = self.M.append(m, ignore_index=True)
+
+        else:
+            print("Divide by zero")
+
+        self._graphicRanking()
 
 class style():
     BLACK = '\033[30m'
