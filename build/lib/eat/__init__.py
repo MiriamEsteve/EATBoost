@@ -6,3 +6,5 @@ from eat.FDH import FDH
 from eat.scores import Scores
 from eat.EATBoost import EATBoost
 from eat.deep_EAT_for_EATBoost import deepEATBoost
+from eat.tree_RFEAT import treeRFEAT
+from eat.RFEAT import RFEAT

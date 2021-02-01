@@ -44,6 +44,9 @@ data_pred = dataset.loc[:10, x_p]  #without y, if you want it
 data_prediction = model.predict(data_pred, x_p)
 data_prediction  #show "p" predictions
 
+#Random Forest
+modelRFEAT = eat.RFEAT(50, dataset, x, y, numStop, "Breiman")
+modelRFEAT.fit_RFEAT()
 
 #Create model of Efficiency Scores
 mdl_scores = eat.Scores(dataset, x, y, model.tree)

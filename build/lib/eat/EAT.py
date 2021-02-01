@@ -258,7 +258,6 @@ class EAT(deepEAT):
 
         # Recorrer todos los nodos t del tree
         for self.t in self.tree:
-            print("t: ", self.t)
             # Nodos finales ignorar
             if self.t["SL"] == -1:
                 continue
@@ -287,14 +286,9 @@ class EAT(deepEAT):
                     tL_p, tR_p = model._estimEAT(index, xi, array[i])
                     errL_p = tL_p["R"]
                     errR_p = tR_p["R"]
-                    if(self.t["id"] == 4):
-                        print(tL_p)
-                        print(tR_p)
 
                     if tL_p["y"] == INF or tR_p["y"] == INF:
                         continue
-                    print("errL_p: ", errL_p)
-                    print("errR_p: ", errR_p)
 
                     # if t*["s"] == t'["s"] es el mismo split
                     if self.t["s"] == array[i]:
