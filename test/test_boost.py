@@ -4,8 +4,9 @@ import numpy as np
 import math
 INF = math.inf
 
+'''
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 5).data
+dataset = eat.Data(2, 5).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
@@ -18,7 +19,7 @@ dataset = data.iloc[:,:-1].copy()
 
 x = ["x1", "x2"]
 y = ["y"]
-'''
+
 
 '''
 numStop = 5
