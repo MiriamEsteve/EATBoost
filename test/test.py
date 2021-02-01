@@ -8,11 +8,12 @@ dataset = eat.Data(1, 50).data
 x = ["x1", "x2"]
 y = ["y1", "y2"]
 
+'''
 data = eat.Data2(50, 3).data
 dataset = data.iloc[:,:-1].copy()
 y = [dataset.columns[-1]]
 x = list(dataset.drop(y, axis=1).columns)
-
+'''
 numStop = 5
 fold = 5
 

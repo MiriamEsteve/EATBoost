@@ -53,22 +53,22 @@ class EAT(deepEAT):
             del self.BestTivs
             del self.SE
             del self.TAiv
-            del self.leaves
-            del self.t
+            #del self.leaves
+            #del self.t
             del self.N
-            del self.matrix
+            #del self.matrix
             del self.Lv
             del self.notLv
-            del self.Tk
+            #del self.Tk
             del self.tree_alpha_list
             del self.td_tree_alpha_list
             del self.td
-            del self.nX
-            del self.nY
-            del self.fold
-            del self.numStop
-            del self.x
-            del self.y
+            #del self.nX
+            #del self.nY
+            #del self.fold
+            #del self.numStop
+            #del self.x
+            #del self.y
         except Exception:
             pass
 
@@ -248,6 +248,8 @@ class EAT(deepEAT):
         #print("   Tk->score Select = ", self.Tk["score"], ", tree size = ", len(self.Tk["tree"]))
 
     def _imp_var_Breiman(self):
+        model = deepEAT(self.Sample, self.x, self.y, 5)
+        self.tree = self.Tk["tree"]
         # Lista que almacena los P(s^*, sm) de cada xi
         result = []
 
@@ -255,20 +257,20 @@ class EAT(deepEAT):
         empty = []
 
         # Recorrer todos los nodos t del tree
-        for t in range(len(self.tree)):
-
+        for self.t in self.tree:
+            print("t: ", self.t)
             # Nodos finales ignorar
-            if self.tree[t]["s"] == -1:
+            if self.t["SL"] == -1:
                 continue
 
             for xi in range(self.nX):
-                index = self.tree[t]["index"]
+                index = self.t["index"]
                 # Probabilidad de predecir correctamente P(s*, sm)
                 P = []
 
                 # En caso de que no sea la var. obj ordena los valores de xi del nodo t
                 # para luego probar sus valores como s (s: valor de split de la variable xi)
-                array = self.matrix.iloc[index, xi]
+                array = self.Sample.iloc[index, xi]
                 array = array.tolist()
                 array = list(set(array))  # Eliminar duplicados
                 array.sort()
@@ -278,22 +280,34 @@ class EAT(deepEAT):
 
                 # Calcula el error 'R' para cada valor 's' desde el primer menor y el último mayor
                 for i in range(1, len(array)):
-                    tL_p, tR_p = deepEAT._estimEAT(self.t["index"], xi, array[i])
+                    model.t = self.t
+                    model.tree = self.tree
+                    tree = pd.DataFrame(model.tree)
+                    model.leaves = tree[tree["SL"] == -1]["id"].values
+                    tL_p, tR_p = model._estimEAT(index, xi, array[i])
                     errL_p = tL_p["R"]
                     errR_p = tR_p["R"]
+                    if(self.t["id"] == 4):
+                        print(tL_p)
+                        print(tR_p)
+
+                    if tL_p["y"] == INF or tR_p["y"] == INF:
+                        continue
+                    print("errL_p: ", errL_p)
+                    print("errR_p: ", errR_p)
 
                     # if t*["s"] == t'["s"] es el mismo split
-                    if self.tree[t]["s"] == array[i]:
+                    if self.t["s"] == array[i]:
                         continue
 
                     # tL*
-                    tL_i = list(self.tree[self.tree[t]["SL"]]["index"])
+                    tL_i = list(self.tree[self.t["SL"]]["index"])
 
                     # t'L
                     tL_p_i = list(tL_p["index"])
 
                     # tR*
-                    tR_i = list(self.tree[self.tree[t]["SR"]]["index"])
+                    tR_i = list(self.tree[self.t["SR"]]["index"])
 
                     # t'L
                     tR_p_i = list(tR_p["index"])
@@ -302,10 +316,10 @@ class EAT(deepEAT):
                     imp = round((len(set(tL_i) & set(tL_p_i)) + len(set(tR_i) & set(tR_p_i))) / len(tL_i), 3)
 
                     # P [xi, s*, sm, R(t'L), R(t'R), P(s*,sm)]
-                    P.append([self.tree[t]["id"], xi, self.tree[t]["s"], array[i], errL_p, errR_p, imp])
+                    P.append([self.t["id"], xi, self.t["s"], array[i], errL_p, errR_p, imp])
 
                 if len(P) == 0:
-                    empty.append(self.tree[t]["id"])
+                    empty.append(self.t["id"])
                     continue
 
                 # Mejor sm de xm que máx(P(s*,sm))
@@ -352,7 +366,7 @@ class EAT(deepEAT):
                 # Recorer cada nodo t de T*
                 for t in range(len(self.tree)):
                     # Ignorar nodos hoja
-                    if self.tree[t]["s"] == -1:
+                    if self.tree[t]["SL"] == -1:
                         continue
 
                     # Errors in sons

@@ -63,6 +63,9 @@ class deepEAT:
     def _checkDeep_enter_parameters(self, matrix, x, y, numStop):
         #var. x and var. y have been procesed
         if type(x[0]) == int or type(y[0]) == int:
+            self.matrix = matrix
+            self.x = x
+            self.y = y
             return
         else:
             self.matrix = matrix.loc[:, x + y]  # Order variables
