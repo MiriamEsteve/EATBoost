@@ -89,6 +89,18 @@ class RFEAT(treeRFEAT):
                 ti = self._posIdNode(tree, tree[ti]["SR"])
         return tree[ti]["y"]
 
+    def _predictRFEAT(self, Xn):
+        y_result = [[] for _ in range(len(self.forest))]
+
+        for tree in range(len(self.forest)):
+            pred = self._predictor(self.forest[tree], Xn)
+            y_result[tree] = pred
+
+        y_result = pd.DataFrame(y_result)
+        y_result = y_result.mean(axis=0)
+
+        return y_result
+
     def predict(self, data, x):
         data = data.copy()
         if type(data) == list:
@@ -96,7 +108,7 @@ class RFEAT(treeRFEAT):
 
         data = pd.DataFrame(data)
         # Check if columns X are in data
-        self._check_columnsX_in_data(data, x)
+        #self._check_columnsX_in_data(data, x)
         # Check length columns X
         if len(data.loc[0, x]) != len(self.xCol):
             raise EXIT("ERROR. The register must be a length of " + str(len(self.xCol)))
@@ -104,35 +116,25 @@ class RFEAT(treeRFEAT):
         x = data.columns.get_indexer(x).tolist()  # Index var.ind in matrix
 
         for i in range(len(data)):
-            y_result = [[] for _ in range(len(self.forest))]
-
-            for tree in range(len(self.forest)):
-                pred = self._predictor(self.forest[tree], data.iloc[i, x])
-                y_result[tree] = pred
-
-            y_result = pd.DataFrame(y_result)
-            y_result = y_result.mean(axis=0)
+            y_result = self._predictRFEAT(data.iloc[i, x])
             for j in range(len(self.yCol)):
                 data.loc[i, "p_" + str(self.yCol[j])] = y_result[j].copy()
-
         return data
 
     # =============================================================================
     # Scores
     # =============================================================================
-    def scoreRF(self, data, x):
+    def scoreRF(self, data):
         data = data.copy()
         data["p"] = [[] for _ in range(len(data.index))]
         y_result = [[] for _ in range(len(self.forest[0][0]["y"]))]
         for Xn in range(len(data)):
-            yRF = self.predict(data.loc[Xn, x], x)
-            print(yRF)
+            yRF = self._predictRFEAT(data.iloc[Xn])
             if not isinstance(yRF[0], float):
                 yRF = yRF[0]
-
             for d in range(self.nY):
                 y_result[d] = round(yRF[d] / data.iloc[Xn, self.y[d]], 6)
-            data.loc[Xn, "p"] = np.min(y_result)
+            data.loc[Xn, "scoreRFEAT"] = np.min(y_result)
         return data
 
     def _check_columnsX_in_data(self, matrix, x):
