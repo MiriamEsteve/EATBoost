@@ -57,6 +57,7 @@ class RFEAT(treeRFEAT):
             if all(v == 0 for v in y_EstimArr):
                 continue
             self.err += sum((reg_i.iloc[self.y] - (y_EstimArr / Ki)) ** 2)
+        self.err /= self.NSample
 
     def _bagging(self):
         # Data Frame resultado
@@ -130,14 +131,59 @@ class RFEAT(treeRFEAT):
         y_result = [[] for _ in range(len(self.forest[0][0]["y"]))]
         for Xn in range(len(data)):
             yRF = self._predictRFEAT(data.iloc[Xn])
-            print(yRF)
             if not isinstance(yRF[0], float):
                 yRF = yRF[0]
-
             for d in range(self.nY):
                 y_result[d] = round(yRF[d] / data.iloc[Xn, self.y[d]], 6)
-            data.loc[Xn, "p"] = np.min(y_result)
+            data.loc[Xn, "scoreRFEAT"] = np.min(y_result)
         return data
+
+    # =============================================================================
+    # Ranking Variables
+    # =============================================================================
+    def imp_var(self):
+        imp = [] * self.nX
+        err = self.err
+        Sample = self.Sample.copy()
+
+        for xi in self.xCol:
+            df_xi = Sample.copy()
+
+            # Barajar xi
+            idx = np.random.choice(self.Sample[xi].index, size=self.NSample, replace=False)
+            df_xi[xi] = self.Sample.loc[idx, xi].reset_index(drop=True)
+            self.matrix = self.Sample = df_xi.copy()
+            self.fit_RFEAT()
+            self.Sample = Sample.copy()
+            err_xi = self.err
+
+            imp.append(100 * ((err_xi - err) / err))
+
+        self.err = err
+        self.Sample = Sample.copy()
+        self.M = pd.DataFrame([imp], columns=self.xCol)
+
+        self.graphic()
+
+        return imp
+
+    def graphic(self):
+        objects = tuple(list(self.M.columns))
+        y_pos = np.arange(len(self.M.columns))
+        performance = list(self.M.iloc[0])
+
+        plt.bar(y_pos, performance, align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('M')
+        plt.title('Variable Importance Ranking')
+
+        plt.show()
+
+        plt.savefig('ranking_variable.png')
+
+        print("\n\n--------------- Variable Importance Ranking ------------")
+        print(round(self.M.iloc[0], 2).to_string(header=None, index=list(self.M.columns)))
+        print("--------------------------------------------------------")
 
     def _check_columnsX_in_data(self, matrix, x):
         cols = x
