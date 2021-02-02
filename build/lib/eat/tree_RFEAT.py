@@ -11,7 +11,7 @@ class treeRFEAT:
         self.yCol = y
         self.matrix = matrix
         self.x = x
-        self.y = x
+        self.y = y
         self.nX = len(self.x)
         self.nY = len(self.y)
         self.N = len(matrix)
@@ -61,7 +61,7 @@ class treeRFEAT:
                 break
 
             # Sppliting
-            self._split()
+            self._splited()
 
     def _select_mtry(self):
         nt = len(self.t["index"])
@@ -88,13 +88,14 @@ class treeRFEAT:
         if self.mtry > self.nX:
             self.mtry = self.nX
 
-    def _split(self):
+    def _splited(self):
         self._select_mtry()
 
         # Randomly select k (<P) of the original predictors
         # Select random columns by index
         self.arrayK = sorted(list(np.random.choice(self.arrayBase, replace=False, size=self.mtry)))
 
+        self._split()
 
     # =============================================================================
     # Mean Square Error (MSE)

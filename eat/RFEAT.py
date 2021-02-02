@@ -40,10 +40,11 @@ class RFEAT(treeRFEAT):
 
             # Train a tree model on this sample -> EAT
             model = treeRFEAT(self.m, df_train, self.x, self.y, self.numStop, self.s_mtry)
+            model.fit_treeRFEAT()
             self.forest.append(model.tree)
         # TEST
         for i in range(self.NSample):
-            reg_i = self.matrix.iloc[i]
+            reg_i = self.Sample.iloc[i]
 
             y_EstimArr = [0] * self.nY
 
@@ -58,7 +59,6 @@ class RFEAT(treeRFEAT):
             self.err += sum((reg_i.iloc[self.y] - (y_EstimArr / Ki)) ** 2)
 
     def _bagging(self):
-
         # Data Frame resultado
         df_train = pd.DataFrame(columns=self.xCol)
         array = [1] * self.NSample
@@ -90,6 +90,7 @@ class RFEAT(treeRFEAT):
         return tree[ti]["y"]
 
     def predict(self, data, x):
+        data = data.copy()
         if type(data) == list:
             return self._predictor(self.tree, pd.Series(data))
 
@@ -101,31 +102,31 @@ class RFEAT(treeRFEAT):
             raise EXIT("ERROR. The register must be a length of " + str(len(self.xCol)))
 
         x = data.columns.get_indexer(x).tolist()  # Index var.ind in matrix
-        # Y resultado
-        y_result = [[] for _ in range(len(self.forest))]
 
         for i in range(len(data)):
+            y_result = [[] for _ in range(len(self.forest))]
+
             for tree in range(len(self.forest)):
-                pred = self._predictor(tree, data.iloc[i, x])
+                pred = self._predictor(self.forest[tree], data.iloc[i, x])
                 y_result[tree] = pred
 
-                y_result = pd.DataFrame(y_result)
-                y_result = y_result.mean(axis=0)
+            y_result = pd.DataFrame(y_result)
+            y_result = y_result.mean(axis=0)
             for j in range(len(self.yCol)):
-                data.loc[i, "p_" + str(self.yCol[j])] = y_result[j]
+                data.loc[i, "p_" + str(self.yCol[j])] = y_result[j].copy()
 
         return data
 
     # =============================================================================
     # Scores
     # =============================================================================
-    def scoreRF(self, data):
+    def scoreRF(self, data, x):
+        data = data.copy()
         data["p"] = [[] for _ in range(len(data.index))]
-        yRF = [[] for _ in range(len(self.forest[0][0]["y"]))]
         y_result = [[] for _ in range(len(self.forest[0][0]["y"]))]
         for Xn in range(len(data)):
-            yRF = self.predict(data, data.iloc[Xn])
-
+            yRF = self.predict(data.loc[Xn, x], x)
+            print(yRF)
             if not isinstance(yRF[0], float):
                 yRF = yRF[0]
 

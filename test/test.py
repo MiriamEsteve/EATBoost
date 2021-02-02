@@ -47,6 +47,8 @@ data_prediction  #show "p" predictions
 #Random Forest
 modelRFEAT = eat.RFEAT(50, dataset, x, y, numStop, "Breiman")
 modelRFEAT.fit_RFEAT()
+data = modelRFEAT.predict(dataset, x)
+modelRFEAT.scoreRF(dataset, x)
 
 #Create model of Efficiency Scores
 mdl_scores = eat.Scores(dataset, x, y, model.tree)
