@@ -50,7 +50,7 @@ class treeRFEAT:
         self.leaves = [self.t["id"]]
 
         # Construir arraybase. Index donde están las X's
-        self.arrayBase = list(range(0, self.nX))
+        self.arrayBase = list(self.x)
 
     def fit_treeRFEAT(self):
         'Build tree'

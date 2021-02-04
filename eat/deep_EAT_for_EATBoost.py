@@ -61,7 +61,7 @@ class deepEATBoost:
 
             # Sppliting
             self._split()
-            self.numFinalLeaves += 2
+            self.numFinalLeaves += 1
 
 
     # Return source to graphviz
