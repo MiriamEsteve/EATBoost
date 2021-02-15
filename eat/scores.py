@@ -663,7 +663,7 @@ class Scores:
     # =============================================================================
     # Dynamic DEA
     # =============================================================================
-    def _score_DDF_DEA(self, x, y):
+    def _score_DDF_DynamicDEA(self, x, y):
         # Prepare matrix
         self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
         self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
@@ -684,14 +684,14 @@ class Scores:
 
         # Constrain 1.1, 1.2 y 1.3
         for i in range(self.nX):
-            gi0x = x[0, i] - min(x[1:self.N,i])
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix[1:self.N, self.x[i]])
 
             cons = m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) + beta[0]*gi0x <= x[i]
             # Constrain 1.1
             m.add_constraint(cons)
 
         for i in range(self.nY):
-            gi0y = max(y[1:self.N, i]) - y[0, i]
+            gi0y = max(self.matrix[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
             cons = m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0y >= y[i]
             # Constrain 1.2
             m.add_constraint(cons)
@@ -731,14 +731,14 @@ class Scores:
 
         # Constrain 1.1, 1.2 y 1.3
         for i in range(self.nX):
-            gi0x = xn[0, i] - min(xn[1:self.N, i])
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix[1:self.N, self.x[i]])
 
             # Constrain1.1
             m.add_constraint(
                 m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= xn[i] - beta[0] * gi0x)
 
         for i in range(self.nY):
-            gi0y = max(yn[1:self.N, i]) - yn[0, i]
+            gi0y = max(self.matrix[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
 
             # Constrain 1.2
             m.add_constraint(

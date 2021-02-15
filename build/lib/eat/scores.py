@@ -659,3 +659,119 @@ class Scores:
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._fi_Theoric(self.matrix.iloc[i, self.x].to_list(),
                                                               self.matrix.iloc[i, self.y].to_list())
+
+    # =============================================================================
+    # Dynamic DEA
+    # =============================================================================
+    def _score_DDF_DEA(self, x, y):
+        # Prepare matrix
+        self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
+        self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
+
+        self._prepare_model_DEA_FDH()
+
+        # create one model instance, with a name
+        m = Model(name='beta_DynamicDEA_DDF')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        beta = {0: m.continuous_var(name="beta")}
+
+        # Constrain 1.4
+        name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N)}
+
+        # Constrain 1.5
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N)) == 1)  # sum(lambda) == 1
+
+        # Constrain 1.1, 1.2 y 1.3
+        for i in range(self.nX):
+            gi0x = x[0, i] - min(x[1:self.N,i])
+
+            cons = m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) + beta[0]*gi0x <= x[i]
+            # Constrain 1.1
+            m.add_constraint(cons)
+
+        for i in range(self.nY):
+            gi0y = max(y[1:self.N, i]) - y[0, i]
+            cons = m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0y >= y[i]
+            # Constrain 1.2
+            m.add_constraint(cons)
+
+        gi0I = 0.2*max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0I >= self.matrix.loc[j, "I-deltaK"]
+        # Constrain 1.3
+        m.add_constraint(cons)
+
+        # objetive
+        m.maximize(beta[0])
+
+        # Model Information
+        #m.print_information()
+        m.solve()
+
+        # Solución
+        if m.solution == None:
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+    def _DDF_DynamicCEAT(self, xn, yn):
+        self._prepare_model()
+        # create one model instance, with a name
+        m = Model(name='beta_DynamicCEAT')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        beta = {0: m.continuous_var(name="beta")}
+
+        # Constrain 1.5
+        name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
+
+        # Constrain 1.4
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
+
+        # Constrain 1.1, 1.2 y 1.3
+        for i in range(self.nX):
+            gi0x = xn[0, i] - min(xn[1:self.N, i])
+
+            # Constrain1.1
+            m.add_constraint(
+                m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= xn[i] - beta[0] * gi0x)
+
+        for i in range(self.nY):
+            gi0y = max(yn[1:self.N, i]) - yn[0, i]
+
+            # Constrain 1.2
+            m.add_constraint(
+                m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) >= yn[i] + beta[0] * gi0y)
+
+        gi0I = 0.2 * max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N_leaves)) - beta[0] * gi0I >= \
+                    self.matrix.loc[j, "I-deltaK"]
+        # Constrain 1.3
+        m.add_constraint(cons)
+
+        # objetive
+        m.maximize(beta[0])
+
+        m.solve(agent='local')
+        if m.solution is None:
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+    def DDF_DynamicDEA(self):
+        nameCol = "DDF_DynamicDEA"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._score_DDF_DynamicDEA(self.matrix.iloc[i, self.x].to_list(),
+                                                   self.matrix.iloc[i, self.y].to_list())
+
+    def DDF_DynamicCEAT(self):
+        nameCol = "DDF_DynamicCEAT"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._DDF_DynamicCEAT(self.matrix.iloc[i, self.x].to_list(),
+                                                             self.matrix.iloc[i, self.y].to_list())
