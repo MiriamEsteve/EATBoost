@@ -664,6 +664,9 @@ class Scores:
     # Dynamic DEA
     # =============================================================================
     def _score_DDF_DynamicDEA(self, x, y, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+
         # Prepare matrix
         self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
         self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
@@ -716,6 +719,9 @@ class Scores:
         return sol
 
     def _DDF_DynamicCEAT(self, xn, yn, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+
         self._prepare_model()
         # create one model instance, with a name
         m = Model(name='beta_DynamicCEAT')

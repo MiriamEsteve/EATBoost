@@ -664,6 +664,9 @@ class Scores:
     # Dynamic DEA
     # =============================================================================
     def _score_DDF_DynamicDEA(self, x, y, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+
         # Prepare matrix
         self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
         self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
@@ -684,14 +687,14 @@ class Scores:
 
         # Constrain 1.1, 1.2 y 1.3
         for i in range(self.nX):
-            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix[1:self.N, self.x[i]])
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix.iloc[1:self.N, self.x[i]])
 
             cons = m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) + beta[0]*gi0x <= x[i]
             # Constrain 1.1
             m.add_constraint(cons)
 
         for i in range(self.nY):
-            gi0y = max(self.matrix[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
+            gi0y = max(self.matrix.iloc[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
             cons = m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0y >= y[i]
             # Constrain 1.2
             m.add_constraint(cons)
@@ -716,6 +719,9 @@ class Scores:
         return sol
 
     def _DDF_DynamicCEAT(self, xn, yn, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+        
         self._prepare_model()
         # create one model instance, with a name
         m = Model(name='beta_DynamicCEAT')
