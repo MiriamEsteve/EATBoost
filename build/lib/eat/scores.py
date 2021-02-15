@@ -663,7 +663,7 @@ class Scores:
     # =============================================================================
     # Dynamic DEA
     # =============================================================================
-    def _score_DDF_DEA(self, x, y):
+    def _score_DDF_DynamicDEA(self, x, y, IdeltaK):
         # Prepare matrix
         self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
         self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
@@ -684,20 +684,20 @@ class Scores:
 
         # Constrain 1.1, 1.2 y 1.3
         for i in range(self.nX):
-            gi0x = x[0, i] - min(x[1:self.N,i])
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix[1:self.N, self.x[i]])
 
             cons = m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) + beta[0]*gi0x <= x[i]
             # Constrain 1.1
             m.add_constraint(cons)
 
         for i in range(self.nY):
-            gi0y = max(y[1:self.N, i]) - y[0, i]
+            gi0y = max(self.matrix[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
             cons = m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0y >= y[i]
             # Constrain 1.2
             m.add_constraint(cons)
 
         gi0I = 0.2*max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
-        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0I >= self.matrix.loc[j, "I-deltaK"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0I >= IdeltaK
         # Constrain 1.3
         m.add_constraint(cons)
 
@@ -715,7 +715,7 @@ class Scores:
             sol = m.solution.objective_value
         return sol
 
-    def _DDF_DynamicCEAT(self, xn, yn):
+    def _DDF_DynamicCEAT(self, xn, yn, IdeltaK):
         self._prepare_model()
         # create one model instance, with a name
         m = Model(name='beta_DynamicCEAT')
@@ -731,22 +731,21 @@ class Scores:
 
         # Constrain 1.1, 1.2 y 1.3
         for i in range(self.nX):
-            gi0x = xn[0, i] - min(xn[1:self.N, i])
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix.iloc[1:self.N, self.x[i]])
 
             # Constrain1.1
             m.add_constraint(
                 m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= xn[i] - beta[0] * gi0x)
 
         for i in range(self.nY):
-            gi0y = max(yn[1:self.N, i]) - yn[0, i]
+            gi0y = max(self.matrix.iloc[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
 
             # Constrain 1.2
             m.add_constraint(
                 m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) >= yn[i] + beta[0] * gi0y)
 
         gi0I = 0.2 * max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
-        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N_leaves)) - beta[0] * gi0I >= \
-                    self.matrix.loc[j, "I-deltaK"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N_leaves)) - beta[0] * gi0I >= IdeltaK
         # Constrain 1.3
         m.add_constraint(cons)
 
@@ -766,7 +765,7 @@ class Scores:
 
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._score_DDF_DynamicDEA(self.matrix.iloc[i, self.x].to_list(),
-                                                   self.matrix.iloc[i, self.y].to_list())
+                                                   self.matrix.iloc[i, self.y].to_list(), self.matrix.loc[i, "I-deltaK"])
 
     def DDF_DynamicCEAT(self):
         nameCol = "DDF_DynamicCEAT"
@@ -774,4 +773,4 @@ class Scores:
 
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._DDF_DynamicCEAT(self.matrix.iloc[i, self.x].to_list(),
-                                                             self.matrix.iloc[i, self.y].to_list())
+                                                             self.matrix.iloc[i, self.y].to_list(), self.matrix.loc[i, "I-deltaK"])
