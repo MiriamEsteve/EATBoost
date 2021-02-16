@@ -33,7 +33,7 @@ class EXIT(Exception):
 
 class Scores:
     def __init__(self, matrix, x, y, tree):
-        self.matrix = matrix.loc[:, x + y]  # Order variables
+        self.matrix = matrix.loc[:, x + y].copy()  # Order variables
         self.N = len(self.matrix)
         self._check_columnsX_in_data(matrix, x)
 
