@@ -33,7 +33,7 @@ class EXIT(Exception):
 
 class Scores:
     def __init__(self, matrix, x, y, tree):
-        self.matrix = matrix.loc[:, x + y].copy()  # Order variables
+        self.matrix = matrix.loc[:, x + y]  # Order variables
         self.N = len(self.matrix)
         self._check_columnsX_in_data(matrix, x)
 
@@ -62,10 +62,6 @@ class Scores:
             if col not in matrix.columns.tolist():
                 raise EXIT("ERROR. The names of the inputs are not in the dataset")
 
-    def _prepareData(self, matrix, x, y):
-
-        pass
-    
     def _prepare_a(self, a_y_treeTk, name):
         a = pd.DataFrame.from_records(a_y_treeTk)
         # Rename columns
