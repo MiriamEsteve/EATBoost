@@ -316,7 +316,7 @@ class Scores:
             self.matrix.loc[i, nameCol] = self._scoreEAT_DDF(self.matrix.iloc[i, self.x].to_list(),
                                                              self.matrix.iloc[i, self.y].to_list())
     def DDF_CEAT(self):
-        nameCol = "DDF_EAT"
+        nameCol = "DDF_CEAT"
         self.matrix.loc[:, nameCol] = 0
 
         for i in range(len(self.matrix)):
