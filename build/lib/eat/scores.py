@@ -33,7 +33,7 @@ class EXIT(Exception):
 
 class Scores:
     def __init__(self, matrix, x, y, tree):
-        self.matrix = matrix.loc[:, x + y]  # Order variables
+        self.matrix = matrix  # Order variables
         self.N = len(self.matrix)
         self._check_columnsX_in_data(matrix, x)
 
@@ -62,10 +62,6 @@ class Scores:
             if col not in matrix.columns.tolist():
                 raise EXIT("ERROR. The names of the inputs are not in the dataset")
 
-    def _prepareData(self, matrix, x, y):
-
-        pass
-    
     def _prepare_a(self, a_y_treeTk, name):
         a = pd.DataFrame.from_records(a_y_treeTk)
         # Rename columns
@@ -247,6 +243,41 @@ class Scores:
             sol = m.solution.objective_value
         return sol
 
+    def _scoreCEAT_DDF(self, xn, yn):
+        self._prepare_model()
+        # create one model instance, with a name
+        m = Model(name='beta_EAT')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        beta = {0: m.continuous_var(name="beta")}
+
+        # Constrain 2.4
+        name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
+
+        # Constrain 2.3
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
+
+        # Constrain 2.1 y 2.2
+        for i in range(self.nX):
+            # Constrain 2.1
+            m.add_constraint(
+                m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= xn[i] - beta[0] * xn[i])
+
+        for i in range(self.nY):
+            # Constrain 2.2
+            m.add_constraint(
+                m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) >= yn[i] + beta[0] * yn[i])
+
+        # objetive
+        m.maximize(beta[0])
+
+        m.solve(agent='local')
+        if m.solution is None:
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
 
     def BCC_output_EAT(self):
         nameCol = "BCC_output_EAT"
@@ -279,6 +310,13 @@ class Scores:
 
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._scoreEAT_DDF(self.matrix.iloc[i, self.x].to_list(),
+                                                             self.matrix.iloc[i, self.y].to_list())
+    def DDF_CEAT(self):
+        nameCol = "DDF_CEAT"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._scoreCEAT_DDF(self.matrix.iloc[i, self.x].to_list(),
                                                              self.matrix.iloc[i, self.y].to_list())
 
     #EATBoost
@@ -721,7 +759,7 @@ class Scores:
     def _DDF_DynamicCEAT(self, xn, yn, IdeltaK):
         self.y = self.y[0:2]
         self.nY = len(self.y)
-        
+
         self._prepare_model()
         # create one model instance, with a name
         m = Model(name='beta_DynamicCEAT')
@@ -731,6 +769,108 @@ class Scores:
 
         # Constrain 1.5
         name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
+
+        # Constrain 1.4
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
+
+        # Constrain 1.1, 1.2 y 1.3
+        for i in range(self.nX):
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix.iloc[1:self.N, self.x[i]])
+
+            # Constrain1.1
+            m.add_constraint(
+                m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) <= xn[i] - beta[0] * gi0x)
+
+        for i in range(self.nY):
+            gi0y = max(self.matrix.iloc[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
+
+            # Constrain 1.2
+            m.add_constraint(
+                m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N_leaves)) >= yn[i] + beta[0] * gi0y)
+
+        gi0I = 0.2 * max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N_leaves)) - beta[0] * gi0I >= IdeltaK
+        # Constrain 1.3
+        m.add_constraint(cons)
+
+        # objetive
+        m.maximize(beta[0])
+
+        m.solve(agent='local')
+        if m.solution is None:
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+    def _score_DDF_DynamicFDH(self, x, y, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+
+        # Prepare matrix
+        self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
+        self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
+
+        self._prepare_model_DEA_FDH()
+
+        # create one model instance, with a name
+        m = Model(name='beta_DynamicDEA_DDF')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        beta = {0: m.continuous_var(name="beta")}
+
+        # Constrain 1.4
+        name_lambda = {i: m.binary_var(name="l_{0}".format(i)) for i in range(self.N)}
+
+        # Constrain 1.5
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N)) == 1)  # sum(lambda) == 1
+
+        # Constrain 1.1, 1.2 y 1.3
+        for i in range(self.nX):
+            gi0x = self.matrix.iloc[0, self.x[i]] - min(self.matrix.iloc[1:self.N, self.x[i]])
+
+            cons = m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) + beta[0]*gi0x <= x[i]
+            # Constrain 1.1
+            m.add_constraint(cons)
+
+        for i in range(self.nY):
+            gi0y = max(self.matrix.iloc[1:self.N, self.y[i]]) - self.matrix.iloc[0, self.y[i]]
+            cons = m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0y >= y[i]
+            # Constrain 1.2
+            m.add_constraint(cons)
+
+        gi0I = 0.2*max(self.matrix.loc[1:self.N, "Fixed_assets"]) - 0.2 * self.matrix.loc[0, "Fixed_assets"]
+        cons = m.sum(self.matrix.loc[j, "I-deltaK"] * name_lambda[j] for j in range(self.N)) - beta[0]*gi0I >= IdeltaK
+        # Constrain 1.3
+        m.add_constraint(cons)
+
+        # objetive
+        m.maximize(beta[0])
+
+        # Model Information
+        #m.print_information()
+        m.solve()
+
+        # Solución
+        if m.solution == None:
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+    def _DDF_DynamicEAT(self, xn, yn, IdeltaK):
+        self.y = self.y[0:2]
+        self.nY = len(self.y)
+
+        self._prepare_model()
+        # create one model instance, with a name
+        m = Model(name='beta_DynamicCEAT')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        beta = {0: m.continuous_var(name="beta")}
+
+        # Constrain 1.5
+        name_lambda = {i: m.binary_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
 
         # Constrain 1.4
         m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
@@ -779,4 +919,19 @@ class Scores:
 
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._DDF_DynamicCEAT(self.matrix.iloc[i, self.x].to_list(),
+                                                             self.matrix.iloc[i, self.y].to_list(), self.matrix.loc[i, "I-deltaK"])
+    def DDF_DynamicFDH(self):
+        nameCol = "DDF_DynamicFDH"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._score_DDF_DynamicFDH(self.matrix.iloc[i, self.x].to_list(),
+                                                   self.matrix.iloc[i, self.y].to_list(), self.matrix.loc[i, "I-deltaK"])
+
+    def DDF_DynamicEAT(self):
+        nameCol = "DDF_DynamicEAT"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._DDF_DynamicEAT(self.matrix.iloc[i, self.x].to_list(),
                                                              self.matrix.iloc[i, self.y].to_list(), self.matrix.loc[i, "I-deltaK"])
