@@ -385,6 +385,38 @@ class EAT(deepEAT):
 
         self._graphicRanking()
 
+    # graphic(dataset)
+    def grafico2D(self, datos):
+        # Ordenar "X" para que el gráfico no se confunda al dibujar
+        datos = datos.sort_values(by=["x1"])
+
+        # ------------  Graphic Data ---------------------
+        my_label = 'Data'
+        plt.plot(datos['x1'], datos['y'], 'bo', color="b", markersize=5, label=my_label)
+
+        # ------------  Graphic frontera Dios ---------------------
+        my_label = 'Th Frontier'
+        plt.plot(datos['x1'], datos['yD'], 'r--', label=my_label)  # Experimentos Monte Carlo
+
+        # --------------- Graphic FDH ----------------------------
+        # my_label = "FDH"
+        plt.step(datos['x1'], datos["yFDH"], 'r', color="g", label=my_label, where="post")
+
+        # --------------- Graphic mono_EAT ----------------------------
+        my_label = "EAT"
+        plt.step(datos['x1'], datos["p_y"], 'r', color="c", label=my_label, where="post")
+
+        # --------------- Graphic EAT_DEA ----------------------------
+        # my_label = "EAT_DEA"
+        # plt.plot(datos['X'], datos["y_DEA_EAT"], 'r-', color="m", label=my_label)
+
+        # --------------- Graphic  ----------------------------
+        # plt.title("Deep EAT")
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.legend(loc='upper left')
+        plt.show()
+
 class style():
     BLACK = '\033[30m'
     RED = '\033[31m'

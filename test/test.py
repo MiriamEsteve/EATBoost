@@ -1,6 +1,7 @@
 import eat
 import graphviz
 import numpy as np
+import pandas as pd
 
 #Generate simulated data (seed, N)
 dataset = eat.Data(1, 50).data
@@ -9,7 +10,7 @@ x = ["x1", "x2"]
 y = ["y1", "y2"]
 
 '''
-data = eat.Data2(50, 3).data
+data = eat.Data2(50, 1).data
 dataset = data.iloc[:,:-1].copy()
 y = [dataset.columns[-1]]
 x = list(dataset.drop(y, axis=1).columns)
@@ -32,6 +33,13 @@ deepModel.fit_deep_EAT()
 #Create FDHmodel
 FDHmodel = eat.FDH(dataset, x, y)
 predFDH = FDHmodel.predict()
+
+#Graphic 2D
+predEAT = model.predict(dataset, x)
+predFDH = predFDH.rename(columns={"p_y": "yFDH"})
+pred = pd.merge(predFDH, predEAT, on=["x1", "y"])
+pred["yD"] = data.iloc[:,-1].tolist()
+model.grafico2D(pred)
 
 #Graph tree
 dot_data = model.export_graphviz('EAT')
