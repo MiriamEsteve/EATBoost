@@ -399,7 +399,7 @@ class EAT(deepEAT):
         plt.plot(datos['x1'], datos['yD'], 'r--', label=my_label)  # Experimentos Monte Carlo
 
         # --------------- Graphic FDH ----------------------------
-        # my_label = "FDH"
+        my_label = "FDH"
         plt.step(datos['x1'], datos["yFDH"], 'r', color="g", label=my_label, where="post")
 
         # --------------- Graphic mono_EAT ----------------------------
