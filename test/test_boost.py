@@ -47,22 +47,11 @@ modelScore = eat.Scores(dataset,x, y, modelBoost)
 modelScore.BCC_output_BoostEAT_alternative()
 modelScore.BCC_output_BoostEAT()
 
+#Create model
+fold = 5
+model = eat.EAT(dataset, x, y, numStop, fold)
+model.fit()
+mdl_scores = eat.Scores(dataset, x, y, model.tree)
+modelScore.BCC_output_EAT()
+modelScore.BCC_output_FDH()
 
-
-# MONO-OUTPUT
-data = eat.Data2(50, 1).data
-dataset = data.iloc[:,:-1].copy()
-
-x = ["x1"]
-y = ["y"]
-
-# model.grafico2D(predictDeepEAT)
-modelBoost = eat.EATBoost(dataset, x, y, 1)
-modelBoost.fit_eat_boost(2,2,1)
-#predBoost = modelBoost.predict(dataset, x)
-#predBoost["yD"] = data["yD"]
-#modelBoost.grafico2D(predBoost)
-
-
-modelScore = eat.Scores(dataset,x, y, modelBoost)
-modelScore.BCC_output_BoostEAT()
