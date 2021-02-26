@@ -6,7 +6,7 @@ INF = math.inf
 
 '''
 #Generate simulated data (seed, N)
-dataset = eat.Data(2, 5).data
+dataset = eat.Data(1, 5).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
@@ -14,7 +14,7 @@ y = ["y1", "y2"]
 
 
 '''
-data = eat.Data2(5, 2).data
+data = eat.Data2(50, 2).data
 dataset = data.iloc[:,:-1].copy()
 x = ["x1", "x2"]
 y = ["y"]
@@ -32,6 +32,7 @@ modelBoost.plotCV(resultCV)
 resultTestSample = modelBoost.gridTestSample(J,M,v)
 modelBoost.plotCV(resultTestSample)
 
+#Calculate quantile
 
 #CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])

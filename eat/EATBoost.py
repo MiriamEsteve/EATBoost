@@ -115,6 +115,7 @@ class EATBoost:
                         for e in range(self.nY):
                             mse += ((test.iloc[register, self.y[e]] - pred.iloc[register, e]) ** 2)
                     mse /= self.N
+                    print("mse: ", mse)
                     result = result.append({"M": m, "J": j, "v": v, "MSE": mse}, ignore_index=True)
 
         self.matrix = self.originalMatrix.copy()
@@ -216,6 +217,8 @@ class EATBoost:
         #var. x and var. y have been procesed
         if type(x[0]) == int or type(y[0]) == int:
             self.matrix = matrix
+            if any(self.matrix.dtypes == 'int64'):
+                self.matrix = self.matrix.astype('float64')
             return
         else:
             self.matrix = matrix.loc[:, x + y]  # Order variables
@@ -300,7 +303,7 @@ class EATBoost:
                 i += 1
 
             plt.legend(loc='upper right')
-            plt.savefig("test/graficas/graficaJ="+str(j)+".png")
+            plt.savefig("graficaJ="+str(j)+".png")
             # plt.show()
 
 
