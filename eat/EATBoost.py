@@ -219,6 +219,8 @@ class EATBoost:
             return
         else:
             self.matrix = matrix.loc[:, x + y]  # Order variables
+            if any(self.matrix.dtypes == 'int64'):
+                self.matrix = self.matrix.astype('float64')
 
         if len(matrix) == 0:
             raise EXIT("ERROR. The dataset must contain data")

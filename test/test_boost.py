@@ -4,7 +4,44 @@ import numpy as np
 import math
 INF = math.inf
 
+dataset = pd.read_excel("../BBDD/bancosTaiwan.xlsx", sheet_name="data1")
+dataset = dataset.astype('float64')
+x = ["X1FINFUNDS06", "X2LABOR06", "X3CAPITAL06"]
+y = ["Y1FININV06", "Y2LOANS06"]
+
+numStop = 5
+folds = 5
+J = [i for i in range(10,12,1)]
+v = [round(0.1+0.05*i,2) for i in range(1,5,1)]
+M = [i for i in range(20, 26, 1)]
+#Create model
+modelBoost = eat.EATBoost(dataset, x, y, numStop)
+#Fit model
+resultTestSample = modelBoost.gridTestSample(J,M,v)
+modelBoost.plotCV(resultTestSample)
+
+#Test
+modelBoost.fit_eat_boost(resultTestSample.loc[0, "J"], resultTestSample.loc[0, "M"], resultTestSample.loc[0, "v"])
+predBoostTestSample = modelBoost.predict(dataset, x)
+
+# Scores
+modelScore = eat.Scores(dataset,x, y, modelBoost)
+modelScore.BCC_output_BoostEAT()
+modelScore.BCC_output_EAT()
+modelScore.BCC_output_FDH()
+
+#Save results
+modelScore.matrix.to_excel("BBDD/data1_result.xlsx")
+
+
 '''
+import eat
+import pandas as pd
+import numpy as np
+import math
+INF = math.inf
+
+
 #Generate simulated data (seed, N)
 dataset = eat.Data(2, 5).data
 data = dataset.copy()
@@ -13,7 +50,7 @@ x = ["x1", "x2"]
 y = ["y1", "y2"]
 
 
-'''
+
 data = eat.Data2(5, 2).data
 dataset = data.iloc[:,:-1].copy()
 
@@ -21,7 +58,13 @@ x = ["x1", "x2"]
 y = ["y"]
 
 
-'''
+
+path = "C:/Users/Miriam_Esteve/Documents/Academico/PhD/EAT/Versiones_EAT/scripts/EATBoost/BBDD/"
+data = "1-a_comparative_analysis_of_DEA_as_a_discrete_aleternative_multiple_criteria_decision_tool.xlsx" #M = 25, J = 11, v = 0.3
+dataset = pd.read_excel(path+data)
+x = ["x1", "x2", "x3", "x4", "x5"]
+y = ["y1", "y2", "y3"]
+
 numStop = 5
 folds = 5
 J = [i for i in range(10,12,1)]
@@ -44,12 +87,12 @@ predBoostCV = modelBoost.predict(dataset, x)
 modelBoost.fit_eat_boost(resultTestSample.loc[0, "J"], resultTestSample.loc[0, "M"], resultTestSample.loc[0, "v"])
 predBoostTestSample = modelBoost.predict(dataset, x)
 
-#Create model
-model = eat.deepEAT(dataset, x, y, numStop)
-#Fit model
-model.fit_deep_EAT()
-predictDeepEAT = model.predictDeep(data, x)
-print(predictDeepEAT)
+
+# Scores
+modelScore = eat.Scores(dataset,x, y, modelBoost)
+modelScore.BCC_output_BoostEAT()
+
+
 
 # MONO-OUTPUT
 data = eat.Data2(50, 1).data
@@ -57,8 +100,6 @@ dataset = data.iloc[:,:-1].copy()
 
 x = ["x1"]
 y = ["y"]
-
-'''
 
 # model.grafico2D(predictDeepEAT)
 modelBoost = eat.EATBoost(dataset, x, y, 1)
@@ -168,6 +209,4 @@ modelScore._get_combination()
 modelScore.atreeTk
 modelScore._get_estimations()
 modelScore.ytreeTk
-
-#Only with last tree
-#modelBoost.trees = modelBoost.trees[-1:]
+'''
