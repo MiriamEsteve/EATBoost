@@ -451,8 +451,8 @@ class Scores:
         self.matrix.loc[:, nameCol] = 0
 
         for i in range(len(self.matrix)):
-            self.matrix.loc[i, nameCol] = self._scoreBoostEAT_BCC_output(self.matrix.iloc[i, self.x].to_list(),
-                                                            self.matrix.iloc[i, self.y].to_list())
+            self.matrix.loc[i, nameCol] = self._scoreBoostEAT_BCC_output(self.matrix.iloc[i, self.x].tolist(),
+                                                            self.matrix.iloc[i, self.y].tolist())
 
     #FDH
     def _scoreFDH_BCC_output(self, x, y):
