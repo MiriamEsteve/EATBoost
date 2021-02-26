@@ -6,13 +6,11 @@ INF = math.inf
 
 '''
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 5).data
+dataset = eat.Data(1, 50).data
 data = dataset.copy()
 
 x = ["x1", "x2"]
 y = ["y1", "y2"]
-
-
 '''
 data = eat.Data2(50, 2).data
 dataset = data.iloc[:,:-1].copy()
@@ -46,6 +44,7 @@ predBoostTestSample = modelBoost.predict(dataset, x)
 
 # Scores
 modelScore = eat.Scores(dataset,x, y, modelBoost)
+modelScore.BCC_output_BoostEAT_alternative()
 modelScore.BCC_output_BoostEAT()
 
 
