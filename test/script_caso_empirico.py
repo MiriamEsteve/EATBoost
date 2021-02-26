@@ -22,9 +22,12 @@ modelBoost = eat.EATBoost(dataset, x, y, numStop)
 resultTestSample = modelBoost.gridTestSample(J,M,v)
 modelBoost.plotCV(resultTestSample)
 
+J = 10
+M = 20
+v = 0.2
 #Test
 modelBoost.fit_eat_boost(resultTestSample.loc[0, "J"], resultTestSample.loc[0, "M"], resultTestSample.loc[0, "v"])
-predBoostTestSample = modelBoost.predict(dataset, x)
+#predBoostTestSample = modelBoost.predict(dataset, x)
 
 # Scores
 modelScore = eat.Scores(dataset, x, y, modelBoost)

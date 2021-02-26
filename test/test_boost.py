@@ -33,13 +33,14 @@ resultTestSample = modelBoost.gridTestSample(J,M,v)
 modelBoost.plotCV(resultTestSample)
 
 #Calculate quantile
+resultTS = resultTestSample[resultTestSample["MSE"] <= resultTestSample["MSE"].quantile(q=0.05)]
 
 #CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
 predBoostCV = modelBoost.predict(dataset, x)
 
 #Test
-modelBoost.fit_eat_boost(resultTestSample.loc[0, "J"], resultTestSample.loc[0, "M"], resultTestSample.loc[0, "v"])
+modelBoost.fit_eat_boost(resultTS.loc[0, "J"], resultTS.loc[0, "M"], resultTS.loc[0, "v"])
 predBoostTestSample = modelBoost.predict(dataset, x)
 
 
