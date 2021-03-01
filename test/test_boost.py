@@ -32,7 +32,7 @@ modelBoost.plotCV(resultTestSample)
 
 #Calculate quantile
 resultTS = resultTestSample[resultTestSample["MSE"] <= resultTestSample["MSE"].quantile(q=0.05)]
-
+resultTS = resultTestSample
 #CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
 predBoostCV = modelBoost.predict(dataset, x)
@@ -43,7 +43,7 @@ predBoostTestSample = modelBoost.predict(dataset, x)
 
 
 # Scores
-modelScore = eat.Scores(dataset,x, y, modelBoost)
+modelScore = eat.Scores(dataset, x, y, modelBoost)
 modelScore.BCC_output_BoostEAT_alternative()
 modelScore.BCC_output_BoostEAT()
 
@@ -52,6 +52,6 @@ fold = 5
 model = eat.EAT(dataset, x, y, numStop, fold)
 model.fit()
 mdl_scores = eat.Scores(dataset, x, y, model.tree)
-modelScore.BCC_output_EAT()
-modelScore.BCC_output_FDH()
+mdl_scores.BCC_output_EAT()
+mdl_scores.BCC_output_FDH()
 

@@ -417,7 +417,7 @@ class Scores:
         fi = {0: m.continuous_var(name="fi")}
 
         # Constrain 2.4
-        name_lambda = {i: m.continuous_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
+        name_lambda = {i: m.binary_var(name="l_{0}".format(i)) for i in range(self.N_leaves)}
 
         # Constrain 2.3
         m.add_constraint(m.sum(name_lambda[n] for n in range(self.N_leaves)) == 1)  # sum(lambda) = 1
@@ -447,6 +447,50 @@ class Scores:
         return sol
 
     def _scoreBoostEAT_BCC_output_alternative(self, x, y):
+        # Prepare matrix
+        self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
+        self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
+
+        self._prepare_model_DEA_FDH()
+
+        # create one model instance, with a name
+        m = Model(name='fi_BoostEAT_alternative')
+
+        # by default, all variables in Docplex have a lower bound of 0 and infinite upper bound
+        fi = {0: m.continuous_var(name="fi")}
+
+        # Constrain 2.4
+        name_lambda = {i: m.binary_var(name="l_{0}".format(i)) for i in range(self.N)}
+
+        # Constrain 2.3
+        m.add_constraint(m.sum(name_lambda[n] for n in range(self.N)) == 1)  # sum(lambda) = 1
+
+        # Constrain 2.1 y 2.2
+        for i in range(self.nX):
+            # Constrain 2.1
+            m.add_constraint(m.sum(self.atreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) <= x[i])
+
+        for i in range(self.nY):
+            # Constrain 2.2
+            m.add_constraint(m.sum(self.ytreeTk.iloc[i, j] * name_lambda[j] for j in range(self.N)) >= fi[0] * y[i])
+
+        # objetive
+        m.maximize(fi[0])
+
+        # Model Information
+        # m.print_information()
+
+        sol = m.solve(agent='local')
+
+        # Solución
+        if (m.solution == None):
+            sol = 0
+        else:
+            sol = m.solution.objective_value
+        return sol
+
+
+    def _scoreBoostCEAT_BCC_output_alternative(self, x, y):
         # Prepare matrix
         self.atreeTk = self.matrix.iloc[:, self.x]  # xmatrix
         self.ytreeTk = self.matrix.iloc[:, self.y]  # ymatrix
@@ -502,6 +546,13 @@ class Scores:
 
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._scoreBoostEAT_BCC_output_alternative(self.matrix.iloc[i, self.x].tolist(),
+                                                            self.matrix.iloc[i, self.y].tolist())
+    def BCC_output_BoostCEAT_alternative(self):
+        nameCol = "BCC_output_BoostEAT_alternative"
+        self.matrix.loc[:, nameCol] = 0
+
+        for i in range(len(self.matrix)):
+            self.matrix.loc[i, nameCol] = self._scoreBoostCEAT_BCC_output_alternative(self.matrix.iloc[i, self.x].tolist(),
                                                             self.matrix.iloc[i, self.y].tolist())
     #FDH
     def _scoreFDH_BCC_output(self, x, y):
