@@ -4,7 +4,7 @@ import math
 INF = math.inf
 from docplex.mp.model import Model
 import copy
-from eat.EATBoost import EATBoost
+#from eat.EATBoost import EATBoost
 
 
 class style():

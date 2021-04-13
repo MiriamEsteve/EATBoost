@@ -2,6 +2,7 @@ import copy
 import math
 import pandas as pd
 from graphviz import Digraph
+import pylab
 
 INF = math.inf
 
@@ -260,6 +261,8 @@ class deepEAT:
             yInfLeft = [-INF] * self.nY
 
             for i in range(len(self.leaves)):
+                print("tL: ", tL)
+                print("t tree: ", self.tree[self.leaves[i]])
                 if self._comparePareto(tL, self.tree[self.leaves[i]]) == 1:
                     for j in range(self.nY):
                         if yInfLeft[j] < self.tree[self.leaves[i]]["y"][j]:

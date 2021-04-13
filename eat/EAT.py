@@ -12,14 +12,14 @@ class EAT(deepEAT):
         self.yCol = y
         self._check_enter_parameters(matrix, x, y, numStop, fold)
         self.matrix = matrix.loc[:, x + y].reset_index(drop=True)  # Order variables
-        self.x = matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
-        self.y = matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
+        self.x = self.matrix.columns.get_indexer(x).tolist()  # Index var.ind in matrix
+        self.y = self.matrix.columns.get_indexer(y).tolist()  # Index var. obj in matrix
         self.nX = len(self.x)
         self.nY = len(self.y)
 
         'Constructor for EAT prune tree'
         # Herency
-        deepEAT.__init__(self, matrix, self.x, self.y, numStop)
+        deepEAT.__init__(self, self.matrix, self.x, self.y, numStop)
         self.fit_deep_EAT()
         self.td = self.tree
         self.td_tree_alpha_list = self.tree_alpha_list
