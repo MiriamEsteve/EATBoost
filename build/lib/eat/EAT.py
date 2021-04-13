@@ -17,8 +17,6 @@ class EAT(deepEAT):
         self.nX = len(self.x)
         self.nY = len(self.y)
 
-        print("x: ", self.x)
-        print("y: ", self.y)
         'Constructor for EAT prune tree'
         # Herency
         deepEAT.__init__(self, self.matrix, self.x, self.y, numStop)
