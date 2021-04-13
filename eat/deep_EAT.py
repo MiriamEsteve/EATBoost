@@ -2,6 +2,7 @@ import copy
 import math
 import pandas as pd
 from graphviz import Digraph
+import pylab
 
 INF = math.inf
 
