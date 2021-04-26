@@ -18,7 +18,7 @@ class EAT(deepEAT):
         self.nY = len(self.y)
 
         self.NSample = len(matrix)
-        self.Sample = matrix.copy()
+        self.Sample = self.matrix.copy()
 
         'Constructor for EAT prune tree'
         # Herency
