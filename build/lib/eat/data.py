@@ -4,11 +4,13 @@ from math import e
 
 #sd = semilla, N = tam.muestra, nX = num. X, nY = num. Y, border = % frontera, noise = ruido {0/1}
 class Data:
-    def __init__(self, sd, N):
+    def __init__(self, sd, N, frontier, noise):
         self.sd = sd
         self.N = N
         self.nX = 2
         self.nY = 2
+        self.frontier = frontier
+        self.noise = noise
 
         # Seed random
         np.random.seed(self.sd)
@@ -49,6 +51,27 @@ class Data:
 
         # P3(Calculamos ln(y2*) como z + ln(y1*). Del ln(y2*), sacamos y2* = exp(ln(y2*))
         self.data["y2"] = np.exp(ln_y1_ast + z)
+
+        # Jugaremos con generar un cierto porcentaje de DMUs que estarán en la frontera, ES DECIR, nos quedaremos en el paso 3 y no seguiremos para generar esos datos. Bastará con y1* y y2*,
+        # Si %frontera == 0 no hacer nada
+        if self.frontier > 0:
+            index = self.data.sample(frac=self.frontier, random_state=self.sd).index
+
+            # Tam. data_sample
+            half_normal = np.exp(abs(np.random.normal(0, (0.3 ** (1 / 2)), self.N)))  # Half-normal
+
+            # P5(Calculamos y1(2) y y2(2))
+            if self.noise:
+                normal1 = np.exp(np.random.normal(0, (0.01 ** (1 / 2)), self.N))
+                normal2 = np.exp(np.random.normal(0, (0.01 ** (1 / 2)), self.N))
+
+                self.data.loc[index, "y1"] /= (half_normal * normal1)
+                self.data.loc[index, "y2"] /= (half_normal * normal2)
+
+            # P4(Calculamos y1(1) y y2(1). Son outputs sin ruido aleatorio (sólo con ineficiencias))
+            else:
+                self.data.loc[index, "y1"] /= half_normal
+                self.data.loc[index, "y2"] /= half_normal
 
 
 class Data2:
