@@ -136,7 +136,7 @@ class EATBoost:
         self.trees = []
 
         # Step 2
-        for m in range(self.M):  # 0 is already calculated (at init)
+        for m in range(1, self.M):  # 0 is already calculated (at init)
             # Get residuals
             for i in range(self.N):
                 for j in range(self.nY):
