@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='eat',
+    name='eatBoost',
     version='0.1',
     description='Efficiency Analysis Trees Technique',
     url='https://doi.org/10.1016/j.eswa.2020.113783',

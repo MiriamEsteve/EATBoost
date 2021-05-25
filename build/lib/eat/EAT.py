@@ -17,6 +17,9 @@ class EAT(deepEAT):
         self.nX = len(self.x)
         self.nY = len(self.y)
 
+        self.NSample = len(matrix)
+        self.Sample = self.matrix.copy()
+
         'Constructor for EAT prune tree'
         # Herency
         deepEAT.__init__(self, self.matrix, self.x, self.y, numStop)
@@ -25,8 +28,6 @@ class EAT(deepEAT):
         self.td_tree_alpha_list = self.tree_alpha_list
 
         self.fold = fold
-        self.NSample = len(matrix)
-        self.Sample = matrix.copy()
 
         #List of tree_alpha_list
         self.TAiv = [[]] * self.fold
