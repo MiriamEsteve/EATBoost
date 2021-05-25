@@ -7,7 +7,7 @@ setup(
     url='https://doi.org/10.1016/j.eswa.2020.113783',
     author='Miriam Esteve',
     author_email='miriam.estevec@umh.es',
-    packages=['eat'],
+    packages=['eatBoost'],
     install_requires=['numpy', 'pandas', 'graphviz', 'docplex', "matplotlib"],
     license='AFL-3.0',
     zip_safe=False
