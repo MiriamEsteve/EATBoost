@@ -389,6 +389,7 @@ class Scores:
             for i in range(len(pos)):
                 pos[i] += 1
                 if pos[i] < pos2[i]:
+                    #i += 1
                     break
                 pos[i] = 0
 

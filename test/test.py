@@ -1,10 +1,10 @@
-import eat
+import eatBoost as eat
 import graphviz
 import numpy as np
 import pandas as pd
 
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 50).data
+dataset = eat.Data(1, 50, 1, 0).data
 
 x = ["x1", "x2"]
 y = ["y1", "y2"]
