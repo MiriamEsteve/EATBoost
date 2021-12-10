@@ -548,6 +548,7 @@ class Scores:
         for i in range(len(self.matrix)):
             self.matrix.loc[i, nameCol] = self._scoreBoostEAT_BCC_output_alternative(self.matrix.iloc[i, self.x].tolist(),
                                                             self.matrix.iloc[i, self.y].tolist())
+
     def BCC_output_BoostCEAT_alternative(self):
         nameCol = "BCC_output_BoostEAT_alternative"
         self.matrix.loc[:, nameCol] = 0

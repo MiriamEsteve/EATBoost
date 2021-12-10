@@ -21,8 +21,8 @@ class EATBoost:
 
         self.nX = len(x)  # Num. var. ind.
         self.nY = len(y)  # Num. var. obj
-        self.N = len(self.matrix)  # Num. rows in dataset
-        self.NSample = len(self.matrix)
+        self.N = matrix.shape[0]  # Num. rows in dataset
+        self.NSample = matrix.shape[0]
 
         self.numStop = numStop  #Stop rule
         self.J = 0 #Num. final leaves
@@ -32,7 +32,7 @@ class EATBoost:
         self.trees = []
 
         self.r = [[0]*self.nY for i in range(self.N)]   # residuals
-        self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
+        self.pred = [[max(matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
         self.f0 = self.pred[0].copy()
 
 
@@ -129,9 +129,9 @@ class EATBoost:
         self.J = J
         self.M = M
         self.v = v
+        self.N = self.originalMatrix.shape[0]
         self.r = [[0] * self.nY for i in range(self.N)]  # residuals
-        self.pred = [[max(self.matrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in
-                     range(self.N)]  # Prediction at m-iteration
+        self.pred = [[max(self.originalMatrix.iloc[:, self.y[i]]) for i in range(self.nY)] for i in range(self.N)]  # Prediction at m-iteration
         self.f0 = self.pred[0].copy()
         self.trees = []
 
@@ -140,9 +140,9 @@ class EATBoost:
             # Get residuals
             for i in range(self.N):
                 for j in range(self.nY):
-                    self.r[i][j] = self.matrix.iloc[i, self.y[j]] - self.pred[i][j]
+                    self.r[i][j] = self.originalMatrix.iloc[i, self.y[j]] - self.pred[i][j]
             # Fit deep EAT
-            matrix_residuals = (self.matrix.iloc[:, self.x]).join(pd.DataFrame.from_records(self.r))
+            matrix_residuals = (self.originalMatrix.iloc[:, self.x]).join(pd.DataFrame.from_records(self.r))
             deep_eat = deepEATBoost(matrix_residuals, self.x, self.y, self.numStop, self.J)
             deep_eat.fit_deep_EAT()
             self.trees.append(deep_eat.tree)
@@ -290,7 +290,7 @@ class EATBoost:
             plt.xlabel("Number of iterations (M)")
             plt.ylabel("MSE")
 
-            plt.ylim((result['MSE'].min()-10000, result['MSE'].max()+10000))
+            plt.ylim((result['MSE'].min(), result['MSE'].max()))
 
             # resultJ = result.loc[result['J'] == j]
             # Funcion para cada v

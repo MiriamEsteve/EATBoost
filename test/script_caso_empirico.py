@@ -1,7 +1,9 @@
 import eat
+import eatBoost
 import pandas as pd
 import numpy as np
 import math
+
 INF = math.inf
 
 num = 1
@@ -17,7 +19,7 @@ J = [i for i in range(10,12,1)]
 v = [round(0.1+0.05*i,2) for i in range(1,5,1)]
 M = [i for i in range(20, 26, 1)]
 #Create model
-modelBoost = eat.EATBoost(dataset, x, y, numStop)
+modelBoost = eatBoost.EATBoost(dataset, x, y, numStop)
 #Fit model
 resultTestSample = modelBoost.gridTestSample(J,M,v)
 modelBoost.plotCV(resultTestSample)

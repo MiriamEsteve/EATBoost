@@ -4,24 +4,26 @@ import numpy as np
 import math
 INF = math.inf
 
-'''
+
 #Generate simulated data (seed, N)
-dataset = eat.Data(1, 50).data
+dataset = eat.Data(1, 50, 1, 0).data
 data = dataset.copy()
+print(data)
 
 x = ["x1", "x2"]
 y = ["y1", "y2"]
-'''
-data = eat.Data2(50, 2).data
-dataset = data.iloc[:,:-1].copy()
-x = ["x1", "x2"]
-y = ["y"]
+
+#data = eat.Data2(50, 2).data
+#dataset = data.iloc[:,:-1].copy()
+#x = ["x1", "x2"]
+#y = ["y"]
 
 numStop = 5
-folds = 5
-J = [i for i in range(10,12,1)]
-v = [round(0.1+0.05*i,2) for i in range(1,5,1)]
-M = [i for i in range(20, 26, 1)]
+# folds = 5
+folds = 1
+J = [8]
+v = [0.3]
+M = [8,9]
 #Create model
 modelBoost = eat.EATBoost(dataset, x, y, numStop)
 #Fit model
@@ -36,16 +38,19 @@ resultTS = resultTestSample
 #CV
 modelBoost.fit_eat_boost(resultCV.loc[0, "J"], resultCV.loc[0, "M"], resultCV.loc[0, "v"])
 predBoostCV = modelBoost.predict(dataset, x)
+print(predBoostCV)
 
 #Test
 modelBoost.fit_eat_boost(resultTS.loc[0, "J"], resultTS.loc[0, "M"], resultTS.loc[0, "v"])
 predBoostTestSample = modelBoost.predict(dataset, x)
+print(predBoostTestSample)
 
 
 # Scores
 modelScore = eat.Scores(dataset, x, y, modelBoost)
 modelScore.BCC_output_BoostEAT_alternative()
-modelScore.BCC_output_BoostEAT()
+print(modelScore.matrix)
+#modelScore.BCC_output_BoostEAT()
 
 #Create model
 fold = 5

@@ -2,6 +2,7 @@ import eat
 import pandas as pd
 
 matrix = pd.read_excel("test/prueba_multi_x.xlsx")
+print(matrix)
 #deep_eat = eat.deep_EAT_for_EATBoost.deepEATBoost(matrix, [0,1,2], [3], 1, 10000)
 #deep_eat.fit_deep_EAT()
 #print(deep_eat._predict())
